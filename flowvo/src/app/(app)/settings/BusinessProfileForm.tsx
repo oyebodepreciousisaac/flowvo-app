@@ -11,6 +11,7 @@ interface BusinessProfileFormProps {
     slug: string;
     email: string;
     paymentDetails?: string | null;
+    googleReviewUrl?: string | null;
   };
 }
 
@@ -19,6 +20,7 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   const [name, setName] = useState(initialBusiness.name);
   const [email, setEmail] = useState(initialBusiness.email);
   const [paymentDetails, setPaymentDetails] = useState(initialBusiness.paymentDetails || "");
+  const [googleReviewUrl, setGoogleReviewUrl] = useState(initialBusiness.googleReviewUrl || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -33,12 +35,18 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
       const res = await fetch("/api/business/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, paymentDetails: paymentDetails.trim() || null }),
+        body: JSON.stringify({
+          name,
+          email,
+          paymentDetails: paymentDetails.trim() || null,
+          googleReviewUrl: googleReviewUrl.trim() || null,
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        setErrorMsg(data.error || "Failed to update business profile.");
+        const fieldError = data.fields?.googleReviewUrl?.[0];
+        setErrorMsg(fieldError || data.error || "Failed to update business profile.");
         return;
       }
 
@@ -119,6 +127,33 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
         <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
           These payment instructions are automatically added to the footer of your customer invoice emails.
         </p>
+      </div>
+
+      {/* Google Review URL */}
+      <div>
+        <label htmlFor="googleReviewUrl" className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+          Google Review Link <span className="font-normal text-[var(--color-text-muted)] lowercase">(for automated review requests)</span>
+        </label>
+        <input
+          id="googleReviewUrl"
+          type="url"
+          value={googleReviewUrl}
+          onChange={(e) => setGoogleReviewUrl(e.target.value)}
+          placeholder="https://g.page/r/... or https://maps.app.goo.gl/..."
+          className="w-full h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+        />
+        <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+          Must match direct Google Maps or Business Profile patterns (e.g. g.page/, maps.app.goo.gl/, maps.google.com/).
+        </p>
+
+        {!googleReviewUrl.trim() && (
+          <div className="mt-2.5 p-3 rounded-[var(--radius-md)] bg-[var(--color-status-action)] text-[#8C5A00] border border-[#edd7a6] text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>
+              <strong>Review requests disabled:</strong> Add your Google review link to enable automated review requests when invoices are paid.
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Business Slug (Read-only) */}

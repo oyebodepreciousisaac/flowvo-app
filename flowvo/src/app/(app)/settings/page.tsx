@@ -32,6 +32,7 @@ export default async function SettingsPage() {
               slug: business.slug,
               email: business.email,
               paymentDetails: business.paymentDetails,
+              googleReviewUrl: business.googleReviewUrl,
             }}
           />
         </div>

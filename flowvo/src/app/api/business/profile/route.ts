@@ -3,10 +3,21 @@ import { z } from "zod";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+import { isValidGoogleReviewUrl } from "@/lib/review";
+
 const profileSchema = z.object({
   name: z.string().min(2, "Business name must be at least 2 characters").max(100),
   email: z.string().email("A valid business email is required"),
   paymentDetails: z.string().max(1000).optional().nullable(),
+  googleReviewUrl: z
+    .string()
+    .max(500)
+    .optional()
+    .nullable()
+    .refine(
+      (val) => !val || val.trim() === "" || isValidGoogleReviewUrl(val),
+      "Must be a valid Google review link (e.g. https://g.page/r/... or https://maps.app.goo.gl/...)"
+    ),
 });
 
 export async function PATCH(request: NextRequest) {
@@ -36,6 +47,7 @@ export async function PATCH(request: NextRequest) {
       name: result.data.name,
       email: result.data.email,
       paymentDetails: result.data.paymentDetails,
+      googleReviewUrl: result.data.googleReviewUrl ? result.data.googleReviewUrl.trim() : null,
     },
   });
 
