@@ -8,20 +8,21 @@ datasource db {
 }
 
 model Business {
-  id              String        @id @default(cuid())
+  id              String          @id @default(cuid())
   name            String
-  slug            String        @unique
+  slug            String          @unique
   email           String
   phone           String?
   googleReviewUrl String?
   paymentDetails  String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   users           User[]
   leads           Lead[]
   quotes          Quote[]
   jobs            Job[]
   invoices        Invoice[]
+  reviewRequests  ReviewRequest[]
   activityLogs    ActivityLog[]
 }
 
@@ -59,6 +60,7 @@ model PasswordResetToken {
 // QuoteStatus: DRAFT | SENT | ACCEPTED | DECLINED
 // JobStatus: SCHEDULED | IN_PROGRESS | COMPLETE
 // InvoiceStatus: DRAFT | SENT | PAID | OVERDUE
+// ReviewStatus: PENDING | SENT | REMINDER_SENT
 
 model Lead {
   id           String        @id @default(cuid())
@@ -102,52 +104,72 @@ model Quote {
 }
 
 model Job {
-  id            String        @id @default(cuid())
-  quoteId       String?
-  quote         Quote?        @relation(fields: [quoteId], references: [id])
-  leadId        String?
-  lead          Lead?         @relation(fields: [leadId], references: [id])
-  businessId    String
-  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  customerName  String
-  customerEmail String
-  customerPhone String
-  description   String
-  lineItems     String?       // JSON stringified
-  amount        Int           // pence
-  scheduledDate DateTime?
-  status        String        @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETE
-  completedAt   DateTime?
-  invoices      Invoice[]
-  activityLogs  ActivityLog[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id             String          @id @default(cuid())
+  quoteId        String?
+  quote          Quote?          @relation(fields: [quoteId], references: [id])
+  leadId         String?
+  lead           Lead?           @relation(fields: [leadId], references: [id])
+  businessId     String
+  business       Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  description    String
+  lineItems      String?         // JSON stringified
+  amount         Int             // pence
+  scheduledDate  DateTime?
+  status         String          @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETE
+  completedAt    DateTime?
+  invoices       Invoice[]
+  reviewRequests ReviewRequest[]
+  activityLogs   ActivityLog[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Invoice {
-  id                  String        @id @default(cuid())
+  id                  String          @id @default(cuid())
   jobId               String?
-  job                 Job?          @relation(fields: [jobId], references: [id])
+  job                 Job?            @relation(fields: [jobId], references: [id])
   quoteId             String?
-  quote               Quote?        @relation(fields: [quoteId], references: [id])
+  quote               Quote?          @relation(fields: [quoteId], references: [id])
   leadId              String?
-  lead                Lead?         @relation(fields: [leadId], references: [id])
+  lead                Lead?           @relation(fields: [leadId], references: [id])
   businessId          String
-  business            Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business            Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
   customerName        String
   customerEmail       String
-  invoiceNumber       String        // e.g. "INV-001"
-  lineItems           String        // JSON stringified
-  subtotal            Int           // in pence
-  total               Int           // in pence
-  status              String        @default("DRAFT") // DRAFT | SENT | PAID | OVERDUE
+  invoiceNumber       String          // e.g. "INV-001"
+  lineItems           String          // JSON stringified
+  subtotal            Int             // in pence
+  total               Int             // in pence
+  status              String          @default("DRAFT") // DRAFT | SENT | PAID | OVERDUE
   sentAt              DateTime?
   paidAt              DateTime?
   dueDate             DateTime
-  emailDeliveryStatus String        @default("PENDING") // PENDING | DELIVERED | BOUNCED
+  emailDeliveryStatus String          @default("PENDING") // PENDING | DELIVERED | BOUNCED
+  reviewRequests      ReviewRequest[]
   activityLogs        ActivityLog[]
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+model ReviewRequest {
+  id               String    @id @default(cuid())
+  invoiceId        String
+  invoice          Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  jobId            String?
+  job              Job?      @relation(fields: [jobId], references: [id])
+  businessId       String
+  business         Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerName     String
+  customerEmail    String
+  status           String    @default("PENDING") // PENDING | SENT | REMINDER_SENT
+  sentAt           DateTime?
+  reminderSentAt   DateTime?
+  unsubscribeToken String    @unique
+  unsubscribedAt   DateTime?
+  createdAt        DateTime  @default(now())
 }
 
 model ActivityLog {
@@ -162,9 +184,9 @@ model ActivityLog {
   job        Job?      @relation(fields: [jobId], references: [id])
   invoiceId  String?
   invoice    Invoice?  @relation(fields: [invoiceId], references: [id])
-  entityType String    // "lead" | "quote" | "job" | "invoice"
+  entityType String    // "lead" | "quote" | "job" | "invoice" | "review"
   entityId   String
-  eventType  String    // e.g. "job.created" | "job.status_complete" | "invoice.drafted"
+  eventType  String    // e.g. "job.created" | "job.status_complete" | "invoice.drafted" | "invoice.sent" | "invoice.paid"
   status     String    @default("SUCCESS") // "SUCCESS" | "FAILURE"
   detail     String?
   occurredAt DateTime  @default(now())

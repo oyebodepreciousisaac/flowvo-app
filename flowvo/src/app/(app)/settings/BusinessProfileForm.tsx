@@ -10,6 +10,7 @@ interface BusinessProfileFormProps {
     name: string;
     slug: string;
     email: string;
+    paymentDetails?: string | null;
   };
 }
 
@@ -17,6 +18,7 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   const router = useRouter();
   const [name, setName] = useState(initialBusiness.name);
   const [email, setEmail] = useState(initialBusiness.email);
+  const [paymentDetails, setPaymentDetails] = useState(initialBusiness.paymentDetails || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
       const res = await fetch("/api/business/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, paymentDetails: paymentDetails.trim() || null }),
       });
 
       const data = await res.json();
@@ -98,6 +100,24 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
         />
         <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
           This address is used as the Reply-To in customer automated emails.
+        </p>
+      </div>
+
+      {/* Payment Details (Bank transfer details) */}
+      <div>
+        <label htmlFor="bizPayment" className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+          Bank payment details <span className="font-normal text-[var(--color-text-muted)] lowercase">(included on invoices)</span>
+        </label>
+        <textarea
+          id="bizPayment"
+          rows={3}
+          value={paymentDetails}
+          onChange={(e) => setPaymentDetails(e.target.value)}
+          placeholder="e.g. Bank: Barclays | Name: Apex Plumbing | Sort Code: 20-00-00 | Account: 12345678"
+          className="w-full p-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors resize-y"
+        />
+        <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+          These payment instructions are automatically added to the footer of your customer invoice emails.
         </p>
       </div>
 

@@ -7,7 +7,7 @@ import { StatusChip } from "@/components/ui/StatusChip";
 import { formatPence } from "@/lib/invoice";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { JobScheduleEditor } from "./JobScheduleEditor";
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Phone, Mail, FileText } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, XCircle, Phone, Mail } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -203,7 +203,7 @@ export default async function JobDetailPage({ params }: PageProps) {
                 {job.activityLogs.map((log) => {
                   const isSuccess = log.status === "SUCCESS";
                   let eventLabel = log.eventType;
-                  let description = log.detail;
+                  const description = log.detail;
 
                   if (log.eventType === "job.created") {
                     eventLabel = "Job created";

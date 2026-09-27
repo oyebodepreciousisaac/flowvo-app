@@ -54,9 +54,9 @@ export default function ForgotPasswordPage() {
                 ✉️
               </div>
               <p className="text-sm text-[var(--color-text)] font-medium">
-                If an account exists for <strong>{email}</strong>, you'll receive a reset link within a few minutes.
+                If an account exists for <strong>{email}</strong>, you&apos;ll receive a reset link within a few minutes.
               </p>
-              <p className="text-xs text-[var(--color-text-muted)]">Check your spam folder if it doesn't arrive.</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Check your spam folder if it doesn&apos;t arrive.</p>
               <Link href="/login" className="text-sm text-[var(--color-primary)] font-semibold hover:underline mt-2">
                 Back to sign in
               </Link>
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Enter your email and we'll send you a link to reset your password.
+                Enter your email and we&apos;ll send you a link to reset your password.
               </p>
               <Input
                 id="email"

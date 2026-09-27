@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 const profileSchema = z.object({
   name: z.string().min(2, "Business name must be at least 2 characters").max(100),
   email: z.string().email("A valid business email is required"),
+  paymentDetails: z.string().max(1000).optional().nullable(),
 });
 
 export async function PATCH(request: NextRequest) {
@@ -34,6 +35,7 @@ export async function PATCH(request: NextRequest) {
     data: {
       name: result.data.name,
       email: result.data.email,
+      paymentDetails: result.data.paymentDetails,
     },
   });
 

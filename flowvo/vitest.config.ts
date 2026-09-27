@@ -8,6 +8,9 @@ export default defineConfig({
     globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     exclude: ["node_modules", ".next"],
+    env: {
+      DATABASE_URL: "file:./dev.db",
+    },
   },
   resolve: {
     alias: {

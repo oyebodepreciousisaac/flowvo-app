@@ -229,7 +229,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                 {quote.activityLogs.map((log) => {
                   const isSuccess = log.status === "SUCCESS";
                   let eventLabel = log.eventType;
-                  let description = log.detail;
+                  const description = log.detail;
 
                   if (log.eventType === "quote.created") {
                     eventLabel = "Quote draft created";

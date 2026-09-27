@@ -61,7 +61,7 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
       prev.map((item) => {
         if (item.id !== id) return item;
 
-        let next = { ...item, [field]: value };
+        const next = { ...item, [field]: value };
 
         if (field === "quantity") {
           const qty = typeof value === "number" ? value : parseFloat(value as string) || 0;
@@ -214,7 +214,7 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
         </div>
 
         <div className="space-y-3">
-          {items.map((item, idx) => (
+          {items.map((item) => (
             <div
               key={item.id}
               className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)]"

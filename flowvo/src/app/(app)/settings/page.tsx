@@ -31,6 +31,7 @@ export default async function SettingsPage() {
               name: business.name,
               slug: business.slug,
               email: business.email,
+              paymentDetails: business.paymentDetails,
             }}
           />
         </div>
