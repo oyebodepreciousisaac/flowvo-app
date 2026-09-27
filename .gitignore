@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+build/
+coverage/
+.tmp/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3

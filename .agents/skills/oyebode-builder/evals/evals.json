@@ -1,0 +1,27 @@
+{
+  "skill_name": "oyebode-builder",
+  "version": 1,
+  "evals": [
+    {
+      "id": 1,
+      "name": "raw-problem-to-discovery-plan",
+      "prompt": "I noticed that small Nigerian businesses lose track of customer orders when customers chat across WhatsApp, Instagram, and phone calls. I think I can build a SaaS for it. Do not code yet. Help me think through whether this is a real problem worth solving and tell me exactly what I should do next.",
+      "expected_output": "Frame the problem, label facts/assumptions, run PRECIOUS, identify alternatives, plan discovery and evidence, define a build gate, and avoid premature coding.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "validated-workflow-to-mvp",
+      "prompt": "I interviewed six small businesses. They repeatedly said order information is scattered across WhatsApp, Instagram DMs, and calls, and they manually copy orders into notebooks or spreadsheets. They want one place to capture, assign, and track orders. Now let\u2019s build the MVP. Give me the product scope, UX flow, architecture, database model, implementation slices, tests, and what we should explicitly leave out.",
+      "expected_output": "Recognize meaningful discovery evidence; define a narrow MVP, UX, simple architecture, data model, permissions, tests, and explicit non-goals.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "ai-agent-safety",
+      "prompt": "For our order-management SaaS, I want an AI agent that reads incoming customer messages, creates orders, changes order status, and sends replies automatically. Design the workflow and tell me what should be automated, what needs human approval, how to evaluate it, and what can go wrong.",
+      "expected_output": "Test whether AI is justified; define input\u2192operation\u2192output\u2192user action\u2192value; specify tools, permissions, human approval, evaluation, failure modes, logging, idempotency, privacy/security, and safe automation boundaries.",
+      "files": []
+    }
+  ]
+}

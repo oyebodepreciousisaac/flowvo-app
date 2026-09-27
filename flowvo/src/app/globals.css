@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  /* Base surfaces */
+  --color-bg: #F7F8F7;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F0F1F0;
+  --color-surface-raised: #FFFFFF;
+
+  /* Text */
+  --color-text: #1A1D1A;
+  --color-text-secondary: #4A5150;
+  --color-text-muted: #7A8580;
+  --color-text-on-primary: #FFFFFF;
+
+  /* Border */
+  --color-border: #D8DCDB;
+  --color-border-strong: #A8B0AF;
+  --color-border-focus: #1E7A6A;
+
+  /* Primary action — deep teal-green */
+  --color-primary: #1E7A6A;
+  --color-primary-hover: #165F53;
+  --color-primary-active: #0F4840;
+  --color-primary-subtle: #E8F5F2;
+
+  /* Status colours — semantic */
+  --color-status-new: #E8F5F2;
+  --color-status-action: #FFF4E0;
+  --color-status-warning: #FFF4E0;
+  --color-status-overdue: #FDECEA;
+  --color-status-complete: #E8F5F2;
+  --color-status-lost: #F3F3F3;
+
+  /* Semantic system */
+  --color-success: #1E7A6A;
+  --color-success-bg: #E8F5F2;
+  --color-warning: #8C5A00;
+  --color-warning-bg: #FFF4E0;
+  --color-error: #B91C1C;
+  --color-error-bg: #FDECEA;
+  --color-info: #1D5FA8;
+  --color-info-bg: #EBF3FD;
+
+  /* Overlay */
+  --color-overlay: rgba(26, 29, 26, 0.48);
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Containers & Dimensions */
+  --container-max: 1200px;
+  --container-narrow: 720px;
+  --container-card: 480px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 64px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(26,29,26,0.08), 0 1px 2px rgba(26,29,26,0.06);
+  --shadow-raised: 0 4px 12px rgba(26,29,26,0.10), 0 2px 4px rgba(26,29,26,0.06);
+  --shadow-modal: 0 8px 32px rgba(26,29,26,0.14), 0 2px 8px rgba(26,29,26,0.08);
+
+  /* Fallback aliases for Tailwind */
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}

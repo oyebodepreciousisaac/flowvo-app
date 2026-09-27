@@ -1,0 +1,82 @@
+[
+  {
+    "query": "I have a new SaaS idea. Help me research the problem before we build anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "I found a repetitive workflow in a business and I think software can solve it. Let\u2019s validate it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let\u2019s build an MVP for this customer problem and figure out product scope first.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to turn this manual business process into SaaS. What should I investigate?",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to add an AI agent to my SaaS workflow. Help me design it safely.",
+    "should_trigger": true
+  },
+  {
+    "query": "I interviewed users and now want architecture, database, UX, and build slices.",
+    "should_trigger": true
+  },
+  {
+    "query": "How can I validate whether people would pay for this recurring workflow?",
+    "should_trigger": true
+  },
+  {
+    "query": "I found a painful operational problem in Nigeria that might be a global SaaS opportunity.",
+    "should_trigger": true
+  },
+  {
+    "query": "Let\u2019s turn this product build into a case study based only on what actually happened.",
+    "should_trigger": true
+  },
+  {
+    "query": "We launched the beta. Help me decide what to measure and improve next.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me style my personal website header with Deep Ink and Indigo.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a React hook that debounces an input field.",
+    "should_trigger": false
+  },
+  {
+    "query": "Fix this TypeScript error in my existing API route.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain how PostgreSQL indexes work.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a simple pricing page for my portfolio site.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a generic LinkedIn post about JavaScript.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate a CRUD example in Next.js for learning.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review my CSS because the button is misaligned on mobile.",
+    "should_trigger": false
+  },
+  {
+    "query": "Convert this JSON to TypeScript types.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain the difference between RAG and fine-tuning.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "skill_name": "oyebode-product-brand-studio",
+  "evals": [
+    {
+      "id": 1,
+      "name": "new-product-brand-from-problem-and-references",
+      "prompt": "I found a problem for independent pharmacies: staff spend too much time reconciling stock counts, purchase records, and low-stock alerts across spreadsheets and WhatsApp. I want to turn it into a SaaS. Here are two reference sites I like for how polished their products feel. Study the references and create a product-specific brand and design system for this solution. Do not make it look like my personal brand and do not clone either reference.",
+      "expected_output": "A product-specific brand direction grounded in the problem and references, with positioning, personality, visual system, UX principles, anti-generic-AI review, and implementation artifacts."
+    },
+    {
+      "id": 2,
+      "name": "clone-request-reframed-into-original-system",
+      "prompt": "I want this new B2B workflow product to look exactly like the website I am sending you. Extract everything and tell Antigravity how to reproduce it pixel-for-pixel.",
+      "expected_output": "The skill should reframe the task toward extracting transferable design principles and producing an original product-specific system rather than directly cloning identity, copy, assets, or distinctive composition."
+    },
+    {
+      "id": 3,
+      "name": "avoid-ai-generated-saas-look",
+      "prompt": "The product works, but the UI looks like it came from an AI website generator: gradients everywhere, rounded cards, giant headings, and generic dashboard sections. I want it to feel like a real product designed intentionally for operations teams.",
+      "expected_output": "A practical visual/UX review that identifies generic signals, ties improvements to the actual workflow, and produces a more product-specific system without imposing a single aesthetic."
+    },
+    {
+      "id": 4,
+      "name": "do-not-trigger-personal-site-work",
+      "prompt": "Help me adjust the spacing and button radius on my personal portfolio website.",
+      "expected_output": "The product brand skill should not be needed because this is the personal website rather than a new product identity task."
+    },
+    {
+      "id": 5,
+      "name": "preserve-existing-product-brand",
+      "prompt": "Our SaaS already has an approved brand system and customer-validated UI. I only want the settings page to use the existing components correctly.",
+      "expected_output": "Do not redesign the brand. Work within the existing system and solve the local UI implementation issue."
+    }
+  ]
+}

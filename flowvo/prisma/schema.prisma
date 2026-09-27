@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Business {
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  email           String
+  phone           String?
+  googleReviewUrl String?
+  paymentDetails  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  users           User[]
+  leads           Lead[]
+  quotes          Quote[]
+  jobs            Job[]
+  invoices        Invoice[]
+  activityLogs    ActivityLog[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
+// SQLite does not support native enums — stored as String; enforced in application code
+// LeadStatus: NEW | CONTACTED | QUOTED | WON | LOST
+// QuoteStatus: DRAFT | SENT | ACCEPTED | DECLINED
+// JobStatus: SCHEDULED | IN_PROGRESS | COMPLETE
+// InvoiceStatus: DRAFT | SENT | PAID | OVERDUE
+
+model Lead {
+  id           String        @id @default(cuid())
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerName String
+  phone        String
+  email        String
+  serviceType  String
+  description  String
+  source       String?
+  status       String        @default("NEW")
+  quotes       Quote[]
+  jobs         Job[]
+  invoices     Invoice[]
+  activityLogs ActivityLog[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Quote {
+  id             String        @id @default(cuid())
+  leadId         String
+  lead           Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  businessId     String
+  business       Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  quoteToken     String        @unique
+  lineItems      String        // JSON stringified array of line items
+  subtotal       Int           // in pence (£1.00 = 100)
+  total          Int           // in pence
+  status         String        @default("DRAFT") // DRAFT | SENT | ACCEPTED | DECLINED
+  sentAt         DateTime?
+  followUpSentAt DateTime?
+  acceptedAt     DateTime?
+  declinedAt     DateTime?
+  jobs           Job[]
+  invoices       Invoice[]
+  activityLogs   ActivityLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Job {
+  id            String        @id @default(cuid())
+  quoteId       String?
+  quote         Quote?        @relation(fields: [quoteId], references: [id])
+  leadId        String?
+  lead          Lead?         @relation(fields: [leadId], references: [id])
+  businessId    String
+  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerName  String
+  customerEmail String
+  customerPhone String
+  description   String
+  lineItems     String?       // JSON stringified
+  amount        Int           // pence
+  scheduledDate DateTime?
+  status        String        @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETE
+  completedAt   DateTime?
+  invoices      Invoice[]
+  activityLogs  ActivityLog[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Invoice {
+  id                  String        @id @default(cuid())
+  jobId               String?
+  job                 Job?          @relation(fields: [jobId], references: [id])
+  quoteId             String?
+  quote               Quote?        @relation(fields: [quoteId], references: [id])
+  leadId              String?
+  lead                Lead?         @relation(fields: [leadId], references: [id])
+  businessId          String
+  business            Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerName        String
+  customerEmail       String
+  invoiceNumber       String        // e.g. "INV-001"
+  lineItems           String        // JSON stringified
+  subtotal            Int           // in pence
+  total               Int           // in pence
+  status              String        @default("DRAFT") // DRAFT | SENT | PAID | OVERDUE
+  sentAt              DateTime?
+  paidAt              DateTime?
+  dueDate             DateTime
+  emailDeliveryStatus String        @default("PENDING") // PENDING | DELIVERED | BOUNCED
+  activityLogs        ActivityLog[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model ActivityLog {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  leadId     String?
+  lead       Lead?     @relation(fields: [leadId], references: [id])
+  quoteId    String?
+  quote      Quote?    @relation(fields: [quoteId], references: [id])
+  jobId      String?
+  job        Job?      @relation(fields: [jobId], references: [id])
+  invoiceId  String?
+  invoice    Invoice?  @relation(fields: [invoiceId], references: [id])
+  entityType String    // "lead" | "quote" | "job" | "invoice"
+  entityId   String
+  eventType  String    // e.g. "job.created" | "job.status_complete" | "invoice.drafted"
+  status     String    @default("SUCCESS") // "SUCCESS" | "FAILURE"
+  detail     String?
+  occurredAt DateTime  @default(now())
+}
