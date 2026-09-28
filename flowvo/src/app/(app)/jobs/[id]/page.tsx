@@ -4,10 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { formatPence } from "@/lib/invoice";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { JobScheduleEditor } from "./JobScheduleEditor";
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Phone, Mail } from "lucide-react";
+import { ArrowLeft, Clock, Phone, Mail } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -196,71 +197,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               <Clock className="w-4 h-4 text-[var(--color-text-muted)]" />
             </h2>
 
-            {job.activityLogs.length === 0 ? (
-              <p className="text-xs text-[var(--color-text-muted)]">No activity recorded yet.</p>
-            ) : (
-              <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[var(--color-border)]">
-                {job.activityLogs.map((log) => {
-                  const isSuccess = log.status === "SUCCESS";
-                  let eventLabel = log.eventType;
-                  const description = log.detail;
-
-                  if (log.eventType === "job.created") {
-                    eventLabel = "Job created";
-                  } else if (log.eventType === "job.status_complete") {
-                    eventLabel = "Job completed";
-                  } else if (log.eventType === "job.rescheduled") {
-                    eventLabel = "Job scheduled / updated";
-                  } else if (log.eventType === "invoice.drafted") {
-                    eventLabel = "Invoice auto-drafted";
-                  }
-
-                  return (
-                    <div key={log.id} className="relative group">
-                      <span
-                        className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 bg-[var(--color-surface)] ${
-                          isSuccess
-                            ? "border-[var(--color-primary)] text-[var(--color-primary)]"
-                            : "border-[var(--color-error)] text-[var(--color-error)]"
-                        }`}
-                      >
-                        {isSuccess ? (
-                          <CheckCircle2 className="w-3 h-3 fill-current" />
-                        ) : (
-                          <XCircle className="w-3 h-3 fill-current" />
-                        )}
-                      </span>
-
-                      <div>
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold text-[var(--color-text)]">
-                            {eventLabel}
-                          </p>
-                          <span className="text-[10px] text-[var(--color-text-muted)]">
-                            {new Date(log.occurredAt).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        {description && (
-                          <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-                            {description}
-                          </p>
-                        )}
-                        <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                          {new Date(log.occurredAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <ActivityTimeline logs={job.activityLogs} />
           </div>
         </div>
       </div>

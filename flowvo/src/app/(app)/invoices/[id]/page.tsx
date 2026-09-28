@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { formatPence } from "@/lib/invoice";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { InvoiceDetailActions } from "./InvoiceDetailActions";
@@ -304,35 +305,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
               Activity History
             </h3>
-            {invoice.activityLogs.length === 0 ? (
-              <p className="text-xs text-[var(--color-text-muted)]">No activity recorded yet.</p>
-            ) : (
-              <div className="relative pl-4 space-y-4 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:bg-[var(--color-border)]">
-                {invoice.activityLogs.map((log) => (
-                  <div key={log.id} className="relative text-xs space-y-0.5">
-                    <div className="absolute -left-[19px] top-1 w-2.5 h-2.5 rounded-full bg-[var(--color-border)] border-2 border-[var(--color-surface)]" />
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[var(--color-text)]">
-                        {log.eventType}
-                      </span>
-                      <span className="text-[10px] text-[var(--color-text-muted)]">
-                        {new Date(log.occurredAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    {log.detail && (
-                      <p className="text-[var(--color-text-secondary)] leading-relaxed">
-                        {log.detail}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <ActivityTimeline logs={invoice.activityLogs} />
           </div>
         </div>
       </div>

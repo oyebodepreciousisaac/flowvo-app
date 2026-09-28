@@ -13,9 +13,11 @@ model Business {
   slug            String          @unique
   email           String
   phone           String?
-  googleReviewUrl String?
-  paymentDetails  String?
-  createdAt       DateTime        @default(now())
+  googleReviewUrl         String?
+  paymentDetails          String?
+  quoteFollowUpDelayDays  Int             @default(3)
+  reviewReminderDelayDays Int             @default(4)
+  createdAt               DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   users           User[]
   leads           Lead[]
@@ -79,6 +81,8 @@ model Lead {
   activityLogs ActivityLog[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  @@index([businessId, status])
 }
 
 model Quote {
@@ -101,6 +105,8 @@ model Quote {
   activityLogs   ActivityLog[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+
+  @@index([businessId, status, sentAt])
 }
 
 model Job {
@@ -125,6 +131,8 @@ model Job {
   activityLogs   ActivityLog[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  @@index([businessId, status, scheduledDate])
 }
 
 model Invoice {
@@ -152,6 +160,8 @@ model Invoice {
   activityLogs        ActivityLog[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
+
+  @@index([businessId, status, dueDate])
 }
 
 model ReviewRequest {
@@ -170,6 +180,8 @@ model ReviewRequest {
   unsubscribeToken String    @unique
   unsubscribedAt   DateTime?
   createdAt        DateTime  @default(now())
+
+  @@index([businessId, status, sentAt])
 }
 
 model ActivityLog {

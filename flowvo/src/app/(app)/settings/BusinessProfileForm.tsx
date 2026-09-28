@@ -12,6 +12,8 @@ interface BusinessProfileFormProps {
     email: string;
     paymentDetails?: string | null;
     googleReviewUrl?: string | null;
+    quoteFollowUpDelayDays?: number;
+    reviewReminderDelayDays?: number;
   };
 }
 
@@ -21,6 +23,12 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   const [email, setEmail] = useState(initialBusiness.email);
   const [paymentDetails, setPaymentDetails] = useState(initialBusiness.paymentDetails || "");
   const [googleReviewUrl, setGoogleReviewUrl] = useState(initialBusiness.googleReviewUrl || "");
+  const [quoteFollowUpDelayDays, setQuoteFollowUpDelayDays] = useState(
+    initialBusiness.quoteFollowUpDelayDays ?? 3
+  );
+  const [reviewReminderDelayDays, setReviewReminderDelayDays] = useState(
+    initialBusiness.reviewReminderDelayDays ?? 4
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -40,6 +48,8 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
           email,
           paymentDetails: paymentDetails.trim() || null,
           googleReviewUrl: googleReviewUrl.trim() || null,
+          quoteFollowUpDelayDays: Number(quoteFollowUpDelayDays),
+          reviewReminderDelayDays: Number(reviewReminderDelayDays),
         }),
       });
 
@@ -172,6 +182,58 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
         <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
           Used to build your public URLs and cannot be modified.
         </p>
+      </div>
+
+      {/* Automation Delays */}
+      <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-border)] space-y-4">
+        <div>
+          <h3 className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wider">
+            Automated Follow-up Timing
+          </h3>
+          <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+            Configure how many days Flowvo waits before sending automated reminder emails.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="quoteDelay" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1">
+              Quote follow-up reminder
+            </label>
+            <select
+              id="quoteDelay"
+              value={quoteFollowUpDelayDays}
+              onChange={(e) => setQuoteFollowUpDelayDays(Number(e.target.value))}
+              className="w-full h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+            >
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <option key={d} value={d}>
+                  {d} {d === 1 ? "day" : "days"} after quote sent
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">Default: 3 days</p>
+          </div>
+
+          <div>
+            <label htmlFor="reviewDelay" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1">
+              Google review reminder
+            </label>
+            <select
+              id="reviewDelay"
+              value={reviewReminderDelayDays}
+              onChange={(e) => setReviewReminderDelayDays(Number(e.target.value))}
+              className="w-full h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+            >
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <option key={d} value={d}>
+                  {d} {d === 1 ? "day" : "days"} after first request
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">Default: 4 days</p>
+          </div>
+        </div>
       </div>
 
       {/* Lead Form Link */}

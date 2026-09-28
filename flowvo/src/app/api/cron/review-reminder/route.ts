@@ -33,14 +33,14 @@ async function handleCron(request: NextRequest) {
     );
   }
 
-  // Query: status = SENT AND sentAt < NOW() - 4 days AND reminderSentAt IS NULL AND unsubscribedAt IS NULL
-  const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
+  // Minimum delay is 1 day, filtered by each business's reviewReminderDelayDays setting
+  const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
 
-  const eligibleReviews = await prisma.reviewRequest.findMany({
+  const potentialReviews = await prisma.reviewRequest.findMany({
     where: {
       status: "SENT",
       sentAt: {
-        lt: fourDaysAgo,
+        lt: oneDayAgo,
       },
       reminderSentAt: null,
       unsubscribedAt: null,
@@ -49,6 +49,12 @@ async function handleCron(request: NextRequest) {
       business: true,
       job: true,
     },
+  });
+
+  const eligibleReviews = potentialReviews.filter((review) => {
+    const delayDays = review.business.reviewReminderDelayDays ?? 4;
+    const cutoff = new Date(Date.now() - delayDays * 24 * 60 * 60 * 1000);
+    return review.sentAt && review.sentAt < cutoff;
   });
 
   const origin = request.nextUrl.origin || "http://localhost:3000";

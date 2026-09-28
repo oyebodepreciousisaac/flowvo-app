@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 const lineItemSchema = z.object({
   id: z.string().optional(),
-  description: z.string().min(1, "Description is required"),
+  description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
   quantity: z.number().min(0.01, "Quantity must be greater than zero"),
   unitPricePence: z.number().int().min(0, "Unit price must be non-negative"),
   lineTotalPence: z.number().int().min(0, "Line total must be non-negative"),

@@ -4,17 +4,15 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { LeadStatusActions } from "./LeadStatusActions";
 import {
   ArrowLeft,
   Phone,
   Mail,
   Calendar,
-  CheckCircle2,
-  XCircle,
   FileText,
   Clock,
-  ExternalLink,
 } from "lucide-react";
 
 interface PageProps {
@@ -186,74 +184,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
               <Clock className="w-4 h-4 text-[var(--color-text-muted)]" />
             </h2>
 
-            {lead.activityLogs.length === 0 ? (
-              <p className="text-xs text-[var(--color-text-muted)]">No activity recorded.</p>
-            ) : (
-              <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[var(--color-border)]">
-                {lead.activityLogs.map((log) => {
-                  const isSuccess = log.status === "SUCCESS";
-                  let eventLabel = log.eventType;
-                  let description = log.detail;
-
-                  if (log.eventType === "lead.created") {
-                    eventLabel = "Enquiry received";
-                    description = description || "Submitted via public enquiry form";
-                  } else if (log.eventType === "ack.sent") {
-                    eventLabel = "Acknowledgement sent";
-                    description = description || "Automated email sent to customer";
-                  } else if (log.eventType === "ack.failed") {
-                    eventLabel = "Acknowledgement failed";
-                    description = description || "Email delivery failed";
-                  }
-
-                  return (
-                    <div key={log.id} className="relative group">
-                      {/* Timeline dot */}
-                      <span
-                        className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 bg-[var(--color-surface)] ${
-                          isSuccess
-                            ? "border-[var(--color-primary)] text-[var(--color-primary)]"
-                            : "border-[var(--color-error)] text-[var(--color-error)]"
-                        }`}
-                      >
-                        {isSuccess ? (
-                          <CheckCircle2 className="w-3 h-3 fill-current" />
-                        ) : (
-                          <XCircle className="w-3 h-3 fill-current" />
-                        )}
-                      </span>
-
-                      {/* Content */}
-                      <div>
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold text-[var(--color-text)]">
-                            {eventLabel}
-                          </p>
-                          <span className="text-[10px] text-[var(--color-text-muted)]">
-                            {new Date(log.occurredAt).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        {description && (
-                          <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-                            {description}
-                          </p>
-                        )}
-                        <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                          {new Date(log.occurredAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <ActivityTimeline logs={lead.activityLogs} />
           </div>
         </div>
       </div>

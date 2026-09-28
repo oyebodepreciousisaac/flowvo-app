@@ -121,7 +121,11 @@ describe("Slice 5: Overdue Cron Query and Processing", () => {
     });
 
     // Run the cron handler
-    const req = new NextRequest("http://localhost:3000/api/cron/invoice-overdue");
+    const req = new NextRequest("http://localhost:3000/api/cron/invoice-overdue", {
+      headers: {
+        authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      },
+    });
     const res = await overdueCronHandler(req);
     const data = await res.json();
 

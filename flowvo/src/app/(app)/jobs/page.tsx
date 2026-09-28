@@ -25,6 +25,7 @@ export default async function JobsPage() {
       { scheduledDate: "asc" },
       { createdAt: "desc" },
     ],
+    take: 50,
   });
 
   return (

@@ -19,6 +19,7 @@ export default async function LeadsPage() {
   const leads = await prisma.lead.findMany({
     where: { businessId: business.id },
     orderBy: { createdAt: "desc" },
+    take: 50,
   });
 
   return (

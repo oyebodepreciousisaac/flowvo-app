@@ -18,6 +18,7 @@ export default async function InvoicesPage() {
   const allInvoices = await prisma.invoice.findMany({
     where: { businessId: session.user.businessId },
     orderBy: { createdAt: "desc" },
+    take: 50,
   });
 
   // Urgency ordering per Build Plan: OVERDUE first, then SENT by dueDate, then DRAFT, then PAID

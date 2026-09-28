@@ -9,6 +9,8 @@ const profileSchema = z.object({
   name: z.string().min(2, "Business name must be at least 2 characters").max(100),
   email: z.string().email("A valid business email is required"),
   paymentDetails: z.string().max(1000).optional().nullable(),
+  quoteFollowUpDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
+  reviewReminderDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   googleReviewUrl: z
     .string()
     .max(500)
@@ -47,6 +49,8 @@ export async function PATCH(request: NextRequest) {
       name: result.data.name,
       email: result.data.email,
       paymentDetails: result.data.paymentDetails,
+      quoteFollowUpDelayDays: result.data.quoteFollowUpDelayDays ?? 3,
+      reviewReminderDelayDays: result.data.reviewReminderDelayDays ?? 4,
       googleReviewUrl: result.data.googleReviewUrl ? result.data.googleReviewUrl.trim() : null,
     },
   });

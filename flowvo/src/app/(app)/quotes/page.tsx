@@ -22,6 +22,7 @@ export default async function QuotesPage() {
       jobs: true,
     },
     orderBy: { createdAt: "desc" },
+    take: 50,
   });
 
   return (

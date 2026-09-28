@@ -228,7 +228,11 @@ describe("Slice 6: Review Reminder Cron & Idempotency", () => {
     });
 
     // Run the reminder cron handler
-    const req = new NextRequest("http://localhost:3000/api/cron/review-reminder");
+    const req = new NextRequest("http://localhost:3000/api/cron/review-reminder", {
+      headers: {
+        authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      },
+    });
     const res = await reviewReminderCronHandler(req);
     const data = await res.json();
 

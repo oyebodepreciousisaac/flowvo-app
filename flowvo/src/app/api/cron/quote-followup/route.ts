@@ -29,14 +29,14 @@ async function handleCron(request: NextRequest) {
     return NextResponse.json({ error: "CRON_SECRET not configured on server" }, { status: 500 });
   }
 
-  // Query: status = SENT AND sentAt < NOW() - 3 days AND followUpSentAt IS NULL
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  // Minimum delay is 1 day, filtered by each business's quoteFollowUpDelayDays setting
+  const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
 
-  const eligibleQuotes = await prisma.quote.findMany({
+  const potentialQuotes = await prisma.quote.findMany({
     where: {
       status: "SENT",
       sentAt: {
-        lt: threeDaysAgo,
+        lt: oneDayAgo,
       },
       followUpSentAt: null,
     },
@@ -44,6 +44,12 @@ async function handleCron(request: NextRequest) {
       lead: true,
       business: true,
     },
+  });
+
+  const eligibleQuotes = potentialQuotes.filter((quote) => {
+    const delayDays = quote.business.quoteFollowUpDelayDays ?? 3;
+    const cutoff = new Date(Date.now() - delayDays * 24 * 60 * 60 * 1000);
+    return quote.sentAt && quote.sentAt < cutoff;
   });
 
   const origin = request.nextUrl.origin || "http://localhost:3000";
