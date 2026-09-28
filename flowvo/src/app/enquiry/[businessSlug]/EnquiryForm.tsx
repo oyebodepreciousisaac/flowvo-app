@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import { broadcastLiveEvent } from "@/lib/live-channel";
 
 interface EnquiryFormProps {
   businessSlug: string;
@@ -115,6 +116,10 @@ export default function EnquiryForm({ businessSlug, businessName }: EnquiryFormP
       }
 
       setIsSuccess(true);
+      broadcastLiveEvent("LEAD_CREATED", {
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        serviceType: formData.serviceType,
+      });
     } catch {
       setFormError("A network error occurred. Please check your connection and try again.");
     } finally {

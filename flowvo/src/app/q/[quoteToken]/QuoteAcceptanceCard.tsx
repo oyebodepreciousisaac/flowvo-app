@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { broadcastLiveEvent } from "@/lib/live-channel";
 
 interface QuoteAcceptanceCardProps {
   quoteToken: string;
@@ -40,6 +41,7 @@ export function QuoteAcceptanceCard({
         return;
       }
       setStatus("ACCEPTED");
+      broadcastLiveEvent("QUOTE_ACCEPTED", { quoteToken });
       router.refresh();
     } catch {
       setErrorMsg("A network error occurred. Please check your connection.");
@@ -62,6 +64,7 @@ export function QuoteAcceptanceCard({
       }
       setStatus("DECLINED");
       setShowDeclineConfirm(false);
+      broadcastLiveEvent("QUOTE_DECLINED", { quoteToken });
       router.refresh();
     } catch {
       setErrorMsg("A network error occurred. Please check your connection.");

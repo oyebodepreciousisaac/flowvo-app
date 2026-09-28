@@ -11,10 +11,11 @@ import {
   Receipt,
   Settings,
   LogOut,
-  Menu,
   X,
   MoreHorizontal,
 } from "lucide-react";
+import { LiveSyncProvider } from "@/components/live/LiveSyncProvider";
+import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -42,89 +43,107 @@ export function AppShell({ children, user }: AppShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col md:flex-row text-[var(--color-text)]">
-      {/* Desktop Sidebar (240px wide) */}
-      <aside className="hidden md:flex flex-col w-[240px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] min-h-screen sticky top-0 h-screen justify-between p-4">
-        <div className="flex flex-col gap-6">
-          {/* Brand header */}
-          <div className="flex items-center gap-2.5 px-2 py-1">
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              F
+    <LiveSyncProvider>
+      <div className="min-h-screen bg-[var(--color-bg)] flex flex-col md:flex-row text-[var(--color-text)]">
+        {/* Desktop Sidebar (240px wide) */}
+        <aside className="hidden md:flex flex-col w-[240px] shrink-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] min-h-screen sticky top-0 h-screen justify-between p-4">
+          <div className="flex flex-col gap-6">
+            {/* Brand header */}
+            <div className="flex items-center gap-2.5 px-2 py-1">
+              <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                F
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-lg leading-tight tracking-tight text-[var(--color-text)]">
+                  Flowvo
+                </span>
+                <span className="text-[11px] text-[var(--color-text-muted)] truncate max-w-[150px]">
+                  {user?.business?.name || "Business"}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight tracking-tight text-[var(--color-text)]">
-                Flowvo
+
+            {/* Navigation Links */}
+            <nav className="flex flex-col gap-1">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-semibold"
+                        : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* User profile & logout */}
+          <div className="border-t border-[var(--color-border)] pt-4 flex flex-col gap-2">
+            <div className="px-2 py-1">
+              <p className="text-xs font-semibold text-[var(--color-text)] truncate">
+                {user?.email || "Owner"}
+              </p>
+              <p className="text-[11px] text-[var(--color-text-muted)] truncate">
+                {user?.business?.name || "Solo Operator"}
+              </p>
+            </div>
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Log out</span>
+              </button>
+            </form>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
+          {/* Mobile Header */}
+          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-sm">
+                F
+              </div>
+              <span className="font-bold text-base text-[var(--color-text)]">Flowvo</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[var(--color-text-secondary)] font-medium truncate max-w-[120px]">
+                {user?.business?.name}
               </span>
-              <span className="text-[11px] text-[var(--color-text-muted)] truncate max-w-[150px]">
-                {user?.business?.name || "Business"}
+              <LiveStatusBadge />
+            </div>
+          </header>
+
+          {/* Desktop Top Header Bar with Live Indicator */}
+          <header className="hidden md:flex items-center justify-between px-8 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-10 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                Workspace
+              </span>
+              <span className="text-xs text-[var(--color-border-strong)]">/</span>
+              <span className="text-xs font-semibold text-[var(--color-text)]">
+                {user?.business?.name || "Flowvo Business"}
               </span>
             </div>
-          </div>
+            <LiveStatusBadge />
+          </header>
 
-          {/* Navigation Links */}
-          <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-semibold"
-                      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"}`} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* User profile & logout */}
-        <div className="border-t border-[var(--color-border)] pt-4 flex flex-col gap-2">
-          <div className="px-2 py-1">
-            <p className="text-xs font-semibold text-[var(--color-text)] truncate">
-              {user?.email || "Owner"}
-            </p>
-            <p className="text-[11px] text-[var(--color-text-muted)] truncate">
-              {user?.business?.name || "Solo Operator"}
-            </p>
-          </div>
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Log out</span>
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-sm">
-              F
-            </div>
-            <span className="font-bold text-base text-[var(--color-text)]">Flowvo</span>
-          </div>
-          <span className="text-xs text-[var(--color-text-secondary)] font-medium truncate max-w-[180px]">
-            {user?.business?.name}
-          </span>
-        </header>
-
-        {/* Page Content Container */}
-        <main className="flex-1 p-4 md:p-8 max-w-[var(--container-max)] w-full mx-auto">
-          {children}
-        </main>
+          {/* Page Content Container */}
+          <main className="flex-1 p-4 md:p-8 max-w-[var(--container-max)] w-full mx-auto">
+            {children}
+          </main>
 
         {/* Mobile Bottom Tab Bar (Height: 60px) */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-center justify-around px-2 z-30">
@@ -215,5 +234,6 @@ export function AppShell({ children, user }: AppShellProps) {
         )}
       </div>
     </div>
+    </LiveSyncProvider>
   );
 }

@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Plus,
 } from "lucide-react";
+import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 
 export const metadata: Metadata = {
   title: "Dashboard — Flowvo",
@@ -179,13 +180,18 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Real-time lead-to-cash workflow status and required actions.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            Real-time lead-to-cash workflow status and required actions.
+          </p>
+        </div>
+        <div className="self-start sm:self-auto">
+          <LiveStatusBadge />
+        </div>
       </div>
 
       {/* Summary KPI Strip */}
