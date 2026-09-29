@@ -80,9 +80,8 @@ const ALLOWED_ORIGINS = new Set([
 
 /**
  * Returns true when the request Origin (or Referer) matches the app domain.
- * Call this on every mutating API route (POST/PATCH/DELETE).
- *
- * In development we allow all origins for convenience.
+ * Dynamically compares against the current request host/x-forwarded-host,
+ * NEXTAUTH_URL, and VERCEL_URL.
  */
 export function isSameOrigin(request: Request): boolean {
   if (process.env.NODE_ENV !== "production") return true;
@@ -92,6 +91,30 @@ export function isSameOrigin(request: Request): boolean {
 
   const check = origin || referer;
   if (!check) return false;
+
+  try {
+    const checkUrl = new URL(check);
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+
+    // Dynamic same-origin match against the serving host
+    if (host && (checkUrl.host === host || host.startsWith(checkUrl.host))) {
+      return true;
+    }
+
+    // Match against NEXTAUTH_URL if set
+    if (process.env.NEXTAUTH_URL) {
+      const authUrl = new URL(process.env.NEXTAUTH_URL);
+      if (checkUrl.host === authUrl.host) return true;
+    }
+
+    // Match against VERCEL_URL if set
+    if (process.env.VERCEL_URL) {
+      if (checkUrl.host === process.env.VERCEL_URL) return true;
+    }
+  } catch {
+    // Malformed origin/referer URL
+    return false;
+  }
 
   for (const allowed of ALLOWED_ORIGINS) {
     if (check.startsWith(allowed)) return true;
