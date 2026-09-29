@@ -63,9 +63,27 @@ export function CustomerInvoicePaymentCard({
   const isPaid = status === "PAID";
   const contactPhone = businessNotificationPhone || businessPhone || "";
 
+  // Resilient resolution: check direct props or parsed JSON
+  let effectiveBankName = bankName;
+  let effectiveAccountNumber = bankAccountNumber;
+  let effectiveAccountName = bankAccountName;
+  let effectiveNotes = paymentDetailsNotes;
+
+  if (!effectiveAccountNumber && paymentDetailsNotes && paymentDetailsNotes.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(paymentDetailsNotes);
+      effectiveBankName = parsed.bankName || effectiveBankName;
+      effectiveAccountNumber = parsed.accountNumber || effectiveAccountNumber;
+      effectiveAccountName = parsed.accountName || effectiveAccountName;
+      effectiveNotes = parsed.notes || "";
+    } catch {
+      // ignore
+    }
+  }
+
   function handleCopyAccount() {
-    if (!bankAccountNumber) return;
-    navigator.clipboard.writeText(bankAccountNumber);
+    if (!effectiveAccountNumber) return;
+    navigator.clipboard.writeText(effectiveAccountNumber);
     setCopiedAccount(true);
     setTimeout(() => setCopiedAccount(false), 2500);
   }
@@ -227,7 +245,7 @@ export function CustomerInvoicePaymentCard({
               Transfer exactly <strong>{totalFormatted}</strong> to the verified business account below:
             </div>
 
-            {bankAccountNumber ? (
+            {effectiveAccountNumber ? (
               <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
                 {/* Bank Name */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
@@ -235,7 +253,7 @@ export function CustomerInvoicePaymentCard({
                     Bank Name
                   </span>
                   <span className="font-bold text-[var(--color-text)] text-sm">
-                    {bankName || "Official Settlement Bank"}
+                    {effectiveBankName || "Official Settlement Bank"}
                   </span>
                 </div>
 
@@ -246,7 +264,7 @@ export function CustomerInvoicePaymentCard({
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-extrabold text-[var(--color-primary)] tracking-wider">
-                      {bankAccountNumber}
+                      {effectiveAccountNumber}
                     </span>
                     <button
                       type="button"
@@ -270,13 +288,13 @@ export function CustomerInvoicePaymentCard({
                 </div>
 
                 {/* Account Name */}
-                {bankAccountName && (
+                {effectiveAccountName && (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
                     <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                       Account Name
                     </span>
                     <span className="font-semibold text-[var(--color-text)]">
-                      {bankAccountName}
+                      {effectiveAccountName}
                     </span>
                   </div>
                 )}
@@ -305,9 +323,9 @@ export function CustomerInvoicePaymentCard({
                   </div>
                 </div>
               </div>
-            ) : paymentDetailsNotes ? (
+            ) : effectiveNotes ? (
               <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-mono whitespace-pre-wrap text-[var(--color-text)] leading-relaxed">
-                {paymentDetailsNotes}
+                {effectiveNotes}
               </div>
             ) : (
               <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">

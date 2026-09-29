@@ -23,6 +23,10 @@ const profileSchema = z.object({
   reviewReminderDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   logoUrl: z.string().max(1000).optional().nullable(),
   notificationPhone: z.string().max(50).optional().nullable(),
+  bankName: z.string().max(100).optional().nullable(),
+  bankCode: z.string().max(50).optional().nullable(),
+  bankAccountNumber: z.string().max(50).optional().nullable(),
+  bankAccountName: z.string().max(100).optional().nullable(),
   googleReviewUrl: z
     .string()
     .max(500)
@@ -103,6 +107,10 @@ export async function PATCH(request: NextRequest) {
       googleReviewUrl: result.data.googleReviewUrl ? result.data.googleReviewUrl.trim() : null,
       logoUrl: result.data.logoUrl !== undefined ? (result.data.logoUrl?.trim() || null) : currentBusiness?.logoUrl,
       notificationPhone: result.data.notificationPhone !== undefined ? (result.data.notificationPhone?.trim() || null) : currentBusiness?.notificationPhone,
+      bankName: result.data.bankName !== undefined ? (result.data.bankName?.trim() || null) : currentBusiness?.bankName,
+      bankCode: result.data.bankCode !== undefined ? (result.data.bankCode?.trim() || null) : currentBusiness?.bankCode,
+      bankAccountNumber: result.data.bankAccountNumber !== undefined ? (result.data.bankAccountNumber?.trim() || null) : currentBusiness?.bankAccountNumber,
+      bankAccountName: result.data.bankAccountName !== undefined ? (result.data.bankAccountName?.trim() || null) : currentBusiness?.bankAccountName,
     },
   });
 
