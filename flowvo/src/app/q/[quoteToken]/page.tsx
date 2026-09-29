@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
-import { formatPence, LineItem } from "@/lib/email-templates/quote-email";
+import { LineItem } from "@/lib/email-templates/quote-email";
+import { formatAmount } from "@/lib/currency";
 import { QuoteAcceptanceCard } from "./QuoteAcceptanceCard";
 import { FileText, Phone, Mail, Calendar, ShieldCheck } from "lucide-react";
 
@@ -19,8 +20,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!quote) return { title: "Quote — Flowvo" };
 
+  const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+
   return {
-    title: `Quote from ${quote.business.name} — ${formatPence(quote.total)}`,
+    title: `Quote from ${quote.business.name} — ${formatAmount(quote.total, currency)}`,
   };
 }
 
@@ -46,7 +49,8 @@ export default async function PublicQuotePage({ params }: PageProps) {
     lineItems = [];
   }
 
-  const formattedTotal = formatPence(quote.total);
+  const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+  const formattedTotal = formatAmount(quote.total, currency);
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] py-12 px-4 sm:px-6 lg:px-8">
@@ -139,10 +143,10 @@ export default async function PublicQuotePage({ params }: PageProps) {
                         {item.quantity}
                       </td>
                       <td className="py-3 px-2 text-right font-mono text-[var(--color-text-secondary)]">
-                        {formatPence(item.unitPricePence)}
+                        {formatAmount(item.unitPricePence, currency)}
                       </td>
                       <td className="py-3 pl-2 text-right font-mono font-semibold text-[var(--color-text)]">
-                        {formatPence(item.lineTotalPence)}
+                        {formatAmount(item.lineTotalPence, currency)}
                       </td>
                     </tr>
                   ))}

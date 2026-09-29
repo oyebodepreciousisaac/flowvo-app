@@ -5,11 +5,16 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { isValidGoogleReviewUrl } from "@/lib/review";
 import { reviewRequestHtml, reviewRequestText } from "@/lib/email-templates/review-request";
+import { isSameOrigin } from "@/lib/security";
 
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

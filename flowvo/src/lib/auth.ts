@@ -6,8 +6,13 @@ import { prisma } from "./prisma";
 const SESSION_COOKIE_NAME = "flowvo_session";
 const SESSION_MAX_AGE_DAYS = 30;
 
+// OWASP 2026 recommendation: minimum bcrypt cost factor 12.
+// Cost 12 = ~250ms per hash on typical server hardware — acceptable for login,
+// but 4× harder for an attacker to brute-force a leaked database than cost 10.
+const BCRYPT_ROUNDS = 12;
+
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(BCRYPT_ROUNDS);
   return bcrypt.hash(password, salt);
 }
 

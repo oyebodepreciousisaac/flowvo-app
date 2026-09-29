@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { LiveSyncProvider } from "@/components/live/LiveSyncProvider";
 import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -122,6 +123,7 @@ export function AppShell({ children, user }: AppShellProps) {
               <span className="text-xs text-[var(--color-text-secondary)] font-medium truncate max-w-[120px]">
                 {user?.business?.name}
               </span>
+              <ThemeToggle />
               <LiveStatusBadge />
             </div>
           </header>
@@ -137,7 +139,10 @@ export function AppShell({ children, user }: AppShellProps) {
                 {user?.business?.name || "Flowvo Business"}
               </span>
             </div>
-            <LiveStatusBadge />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LiveStatusBadge />
+            </div>
           </header>
 
           {/* Page Content Container */}

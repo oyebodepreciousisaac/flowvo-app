@@ -1,3 +1,6 @@
+import { escapeHtml } from "@/lib/security";
+import { formatAmount } from "@/lib/currency";
+
 export interface LineItem {
   id: string;
   description: string;
@@ -6,11 +9,8 @@ export interface LineItem {
   lineTotalPence: number;
 }
 
-export function formatPence(pence: number): string {
-  return (pence / 100).toLocaleString("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  });
+export function formatPence(pence: number, currency: string = "GBP"): string {
+  return formatAmount(pence, currency);
 }
 
 export function quoteEmailHtml({
@@ -19,30 +19,33 @@ export function quoteEmailHtml({
   lineItems,
   totalPence,
   acceptUrl,
+  currency = "GBP",
 }: {
   customerName: string;
   businessName: string;
   lineItems: LineItem[];
   totalPence: number;
   acceptUrl: string;
+  currency?: string;
 }): string {
-  const firstName = customerName.split(" ")[0] || "there";
+  const safeBusinessName = escapeHtml(businessName);
+  const firstName = escapeHtml(customerName.split(" ")[0] || "there");
 
   const rows = lineItems
     .map(
       (item) => `
     <tr>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">
-        ${item.description}
+        ${escapeHtml(item.description)}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 14px; text-align: center;">
         ${item.quantity}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 14px; text-align: right;">
-        ${formatPence(item.unitPricePence)}
+        ${formatPence(item.unitPricePence, currency)}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #111827; font-size: 14px; font-weight: 600; text-align: right;">
-        ${formatPence(item.lineTotalPence)}
+        ${formatPence(item.lineTotalPence, currency)}
       </td>
     </tr>`
     )
@@ -52,12 +55,12 @@ export function quoteEmailHtml({
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Quote from ${businessName}</title>
+  <title>Quote from ${safeBusinessName}</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1d1a; background-color: #f7f8f7; margin: 0; padding: 24px;">
   <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px;">
     <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #1a1d1a;">
-      Quote from ${businessName}
+      Quote from ${safeBusinessName}
     </h2>
     <p style="margin: 0 0 16px; font-size: 15px; color: #4a5150;">
       Hi ${firstName},
@@ -84,7 +87,7 @@ export function quoteEmailHtml({
             Total:
           </td>
           <td style="padding: 14px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #1e7a6a;">
-            ${formatPence(totalPence)}
+            ${formatPence(totalPence, currency)}
           </td>
         </tr>
       </tfoot>
@@ -110,19 +113,21 @@ export function quoteEmailText({
   lineItems,
   totalPence,
   acceptUrl,
+  currency = "GBP",
 }: {
   customerName: string;
   businessName: string;
   lineItems: LineItem[];
   totalPence: number;
   acceptUrl: string;
+  currency?: string;
 }): string {
   const firstName = customerName.split(" ")[0] || "there";
 
   const itemsText = lineItems
     .map(
       (item) =>
-        `- ${item.description}: ${item.quantity} x ${formatPence(item.unitPricePence)} = ${formatPence(item.lineTotalPence)}`
+        `- ${item.description}: ${item.quantity} x ${formatPence(item.unitPricePence, currency)} = ${formatPence(item.lineTotalPence, currency)}`
     )
     .join("\n");
 
@@ -134,7 +139,7 @@ Thank you for your enquiry. We are pleased to provide the following quote:
 
 ${itemsText}
 
-Total: ${formatPence(totalPence)}
+Total: ${formatPence(totalPence, currency)}
 
 To review and accept this quote, visit:
 ${acceptUrl}

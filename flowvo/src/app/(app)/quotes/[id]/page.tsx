@@ -5,7 +5,8 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { ActivityTimeline } from "@/components/ActivityTimeline";
-import { formatPence, LineItem } from "@/lib/email-templates/quote-email";
+import { LineItem } from "@/lib/email-templates/quote-email";
+import { formatAmount, getCurrencySymbol } from "@/lib/currency";
 import { QuoteDetailActions } from "./QuoteDetailActions";
 import { ArrowLeft, Clock, Mail, Phone } from "lucide-react";
 
@@ -61,7 +62,9 @@ export default async function QuoteDetailPage({ params }: PageProps) {
     lineItems = [];
   }
 
-  const totalFormatted = formatPence(quote.total);
+  const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+  const currencySymbol = getCurrencySymbol(currency);
+  const totalFormatted = formatAmount(quote.total, currency);
 
   return (
     <div className="space-y-6">
@@ -132,8 +135,8 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                   <tr className="border-b border-[var(--color-border)] text-[var(--color-text-secondary)]">
                     <th className="py-2.5 pr-2 font-semibold">Description</th>
                     <th className="py-2.5 px-2 font-semibold text-center w-16">Qty</th>
-                    <th className="py-2.5 px-2 font-semibold text-right w-24">Unit (£)</th>
-                    <th className="py-2.5 pl-2 font-semibold text-right w-24">Total (£)</th>
+                    <th className="py-2.5 px-2 font-semibold text-right w-24">Unit ({currencySymbol})</th>
+                    <th className="py-2.5 pl-2 font-semibold text-right w-24">Total ({currencySymbol})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)]">
@@ -146,10 +149,10 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                         {item.quantity}
                       </td>
                       <td className="py-3 px-2 text-right font-mono text-[var(--color-text-secondary)]">
-                        {formatPence(item.unitPricePence)}
+                        {formatAmount(item.unitPricePence, currency)}
                       </td>
                       <td className="py-3 pl-2 text-right font-mono font-semibold text-[var(--color-text)]">
-                        {formatPence(item.lineTotalPence)}
+                        {formatAmount(item.lineTotalPence, currency)}
                       </td>
                     </tr>
                   ))}
@@ -160,7 +163,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                       Subtotal:
                     </td>
                     <td className="pt-4 pb-1 text-right font-mono font-semibold text-xs text-[var(--color-text)]">
-                      {formatPence(quote.subtotal)}
+                      {formatAmount(quote.subtotal, currency)}
                     </td>
                   </tr>
                   <tr>

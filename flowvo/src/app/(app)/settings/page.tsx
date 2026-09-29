@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { decryptField } from "@/lib/security";
 import { BusinessProfileForm } from "./BusinessProfileForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
@@ -33,16 +34,30 @@ export default async function SettingsPage() {
       <div className="max-w-[var(--container-narrow)] flex flex-col gap-6">
         {/* Business Profile & Automation Delays Card */}
         <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-border)] shadow-[var(--shadow-card)] p-6">
-          <h2 className="text-base font-semibold text-[var(--color-text)] mb-4">Business profile</h2>
           <BusinessProfileForm
             initialBusiness={{
               name: business.name,
               slug: business.slug,
               email: business.email,
-              paymentDetails: business.paymentDetails,
+              phone: business.phone,
+              address: business.address,
+              country: business.country,
+              currency: business.currency,
+              paymentGateway: business.paymentGateway,
+              paystackPublicKey: business.paystackPublicKey,
+              hasPaystackSecret: !!business.paystackSecretKey,
+              stripePublishableKey: business.stripePublishableKey,
+              hasStripeSecret: !!business.stripeSecretKey,
+              paymentsEnabled: business.paymentsEnabled,
+              paymentDetails: decryptField(business.paymentDetails),
               googleReviewUrl: business.googleReviewUrl,
               quoteFollowUpDelayDays: business.quoteFollowUpDelayDays,
               reviewReminderDelayDays: business.reviewReminderDelayDays,
+              paystackSubaccountCode: business.paystackSubaccountCode,
+              bankName: business.bankName,
+              bankCode: business.bankCode,
+              bankAccountNumber: business.bankAccountNumber,
+              bankAccountName: business.bankAccountName,
             }}
           />
         </div>

@@ -30,6 +30,12 @@ export default async function NewQuotePage({ searchParams }: PageProps) {
     });
   }
 
+  const business = await prisma.business.findUnique({
+    where: { id: session.user.businessId },
+    select: { currency: true },
+  });
+  const businessCurrency = business?.currency || "NGN";
+
   // If no lead found by param, fetch recent leads to offer selection
   const availableLeads = !lead
     ? await prisma.lead.findMany({
@@ -70,6 +76,7 @@ export default async function NewQuotePage({ searchParams }: PageProps) {
             phone: lead.phone,
             serviceType: lead.serviceType,
           }}
+          currency={businessCurrency}
         />
       ) : (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-4">

@@ -18,6 +18,7 @@ export default function EnquiryForm({ businessSlug, businessName }: EnquiryFormP
     serviceType: "",
     description: "",
     source: "",
+    website: "",
   });
 
   const [turnstileToken, setTurnstileToken] = useState<string>("");
@@ -136,6 +137,7 @@ export default function EnquiryForm({ businessSlug, businessName }: EnquiryFormP
       serviceType: "",
       description: "",
       source: "",
+      website: "",
     });
     setFieldErrors({});
     setFormError(null);
@@ -168,6 +170,17 @@ export default function EnquiryForm({ businessSlug, businessName }: EnquiryFormP
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      {/* Honeypot field for anti-bot protection */}
+      <div style={{ display: "none" }} aria-hidden="true">
+        <input
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={formData.website}
+          onChange={handleChange}
+        />
+      </div>
+
       {formError && (
         <div className="flex items-start gap-3 p-3 text-sm bg-[var(--color-error-bg)] text-[var(--color-error)] rounded-[var(--radius-md)] border border-[#f8b4b4]">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />

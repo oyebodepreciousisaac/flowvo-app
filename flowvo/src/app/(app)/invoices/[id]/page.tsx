@@ -5,10 +5,11 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { ActivityTimeline } from "@/components/ActivityTimeline";
-import { formatPence } from "@/lib/invoice";
+import { formatAmount } from "@/lib/currency";
 import { LineItem } from "@/lib/email-templates/quote-email";
+import { decryptField } from "@/lib/security";
 import { InvoiceDetailActions } from "./InvoiceDetailActions";
-import { ArrowLeft, Mail, Calendar, Briefcase, FileText } from "lucide-react";
+import { ArrowLeft, Mail, Calendar, Briefcase, FileText, Globe, ExternalLink, Printer } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -65,24 +66,45 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     lineItems = [];
   }
 
-  const totalFormatted = formatPence(invoice.total);
-  const subtotalFormatted = formatPence(invoice.subtotal);
+  const currency = (invoice.currency || invoice.business.currency || "NGN").toUpperCase();
+  const totalFormatted = formatAmount(invoice.total, currency);
+  const subtotalFormatted = formatAmount(invoice.subtotal, currency);
   const dueDateFormatted = new Date(invoice.dueDate).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
+  const issueDateFormatted = new Date(invoice.createdAt).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const issueTimeFormatted = new Date(invoice.createdAt).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
     <div className="space-y-6">
-      {/* Back button */}
-      <div>
+      {/* Back button & quick print */}
+      <div className="flex items-center justify-between">
         <Link
           href="/invoices"
           className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Invoices</span>
+        </Link>
+
+        <Link
+          href={`/invoices/${invoice.id}/print`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:underline"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span>Open Printable Invoice</span>
         </Link>
       </div>
 
@@ -152,7 +174,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
 
           <div className="text-right">
             <span className="block text-xs uppercase font-semibold text-[var(--color-text-muted)]">
-              Total Due
+              Total Due ({currency})
             </span>
             <span className="font-mono text-2xl font-bold text-[var(--color-primary)]">
               {totalFormatted}
@@ -176,6 +198,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             currentStatus={invoice.status}
             emailDeliveryStatus={invoice.emailDeliveryStatus}
             dueDateFormatted={dueDateFormatted}
+            paymentLinkUrl={invoice.paymentLinkUrl}
           />
         </div>
       </div>
@@ -206,10 +229,10 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                         {item.quantity}
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--color-text-secondary)]">
-                        {formatPence(item.unitPricePence)}
+                        {formatAmount(item.unitPricePence, currency)}
                       </td>
                       <td className="py-3 pl-4 text-right font-mono font-semibold text-[var(--color-text)]">
-                        {formatPence(item.lineTotalPence)}
+                        {formatAmount(item.lineTotalPence, currency)}
                       </td>
                     </tr>
                   ))}
@@ -238,10 +261,10 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
 
           {/* Payment Instructions Card */}
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-3">
-            <h2 className="text-base font-semibold text-[var(--color-text)]">Payment Instructions</h2>
+            <h2 className="text-base font-semibold text-[var(--color-text)]">Direct Bank Payment Instructions</h2>
             {invoice.business.paymentDetails ? (
               <div className="p-4 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs font-mono text-[var(--color-text)] whitespace-pre-wrap leading-relaxed">
-                {invoice.business.paymentDetails}
+                {decryptField(invoice.business.paymentDetails)}
               </div>
             ) : (
               <div className="p-4 bg-[var(--color-status-action)] text-[#8C5A00] rounded-[var(--radius-md)] border border-[#edd7a6] text-xs">
@@ -270,9 +293,15 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                <span className="text-[var(--color-text-secondary)]">Issue Date</span>
-                <span className="text-[var(--color-text)]">
-                  {new Date(invoice.createdAt).toLocaleDateString("en-GB")}
+                <span className="text-[var(--color-text-secondary)]">Issue Date &amp; Time</span>
+                <span className="text-[var(--color-text)] font-medium">
+                  {issueDateFormatted} at {issueTimeFormatted}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
+                <span className="text-[var(--color-text-secondary)]">Currency</span>
+                <span className="font-mono font-semibold text-[var(--color-text)]">
+                  {currency}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
@@ -297,7 +326,36 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                   </span>
                 </div>
               )}
+              {invoice.paymentReference && (
+                <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
+                  <span className="text-[var(--color-text-secondary)]">Gateway Reference</span>
+                  <span className="font-mono text-[var(--color-text)] text-[11px] truncate max-w-[150px]" title={invoice.paymentReference}>
+                    {invoice.paymentReference}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Online payment link card in sidebar if exists */}
+            {invoice.paymentLinkUrl && (
+              <div className="pt-2">
+                <div className="p-3 bg-[var(--color-primary-subtle)] rounded-[var(--radius-md)] border border-[var(--color-primary)]/20 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)]">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Customer Payment Portal</span>
+                  </div>
+                  <a
+                    href={invoice.paymentLinkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--color-primary)] hover:underline break-all"
+                  >
+                    <span>Open Payment Link</span>
+                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Activity Timeline Card */}

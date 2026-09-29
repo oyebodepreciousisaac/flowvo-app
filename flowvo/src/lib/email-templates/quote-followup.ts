@@ -1,4 +1,5 @@
 import { formatPence } from "./quote-email";
+import { escapeHtml } from "@/lib/security";
 
 export function quoteFollowUpHtml({
   customerName,
@@ -6,21 +7,24 @@ export function quoteFollowUpHtml({
   serviceType,
   totalPence,
   acceptUrl,
+  currency = "GBP",
 }: {
   customerName: string;
   businessName: string;
   serviceType?: string;
   totalPence: number;
   acceptUrl: string;
+  currency?: string;
 }): string {
-  const firstName = customerName.split(" ")[0] || "there";
-  const serviceMention = serviceType ? ` regarding ${serviceType}` : "";
+  const safeBusinessName = escapeHtml(businessName);
+  const firstName = escapeHtml(customerName.split(" ")[0] || "there");
+  const serviceMention = serviceType ? ` regarding ${escapeHtml(serviceType)}` : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Following up on your quote from ${businessName}</title>
+  <title>Following up on your quote from ${safeBusinessName}</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1d1a; background-color: #f7f8f7; margin: 0; padding: 24px;">
   <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px;">
@@ -31,7 +35,7 @@ export function quoteFollowUpHtml({
       Hi ${firstName},
     </p>
     <p style="margin: 0 0 16px; font-size: 15px; color: #4a5150;">
-      Just checking in regarding the quote we sent a few days ago${serviceMention} (Total: <strong>${formatPence(totalPence)}</strong>).
+      Just checking in regarding the quote we sent a few days ago${serviceMention} (Total: <strong>${formatPence(totalPence, currency)}</strong>).
     </p>
     <p style="margin: 0 0 24px; font-size: 15px; color: #4a5150;">
       We wanted to see if you had any questions or if you would like to get this scheduled into our calendar.
@@ -57,12 +61,14 @@ export function quoteFollowUpText({
   serviceType,
   totalPence,
   acceptUrl,
+  currency = "GBP",
 }: {
   customerName: string;
   businessName: string;
   serviceType?: string;
   totalPence: number;
   acceptUrl: string;
+  currency?: string;
 }): string {
   const firstName = customerName.split(" ")[0] || "there";
   const serviceMention = serviceType ? ` regarding ${serviceType}` : "";
@@ -71,7 +77,7 @@ export function quoteFollowUpText({
 
 Hi ${firstName},
 
-Just checking in regarding the quote we sent a few days ago${serviceMention} (Total: ${formatPence(totalPence)}).
+Just checking in regarding the quote we sent a few days ago${serviceMention} (Total: ${formatPence(totalPence, currency)}).
 
 We wanted to see if you had any questions or if you would like to get this scheduled into our calendar.
 
@@ -83,3 +89,4 @@ If you need any adjustments or have decided not to proceed, simply reply to let 
 Best regards,
 ${businessName}`;
 }
+

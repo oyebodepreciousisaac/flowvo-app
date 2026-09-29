@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getNextInvoiceNumber } from "@/lib/invoice";
+import { isSameOrigin } from "@/lib/security";
+import { formatAmount } from "@/lib/currency";
 
 const updateJobSchema = z.object({
   status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETE"]).optional(),
@@ -13,6 +15,10 @@ export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -100,6 +106,8 @@ export async function PATCH(
     const invoiceNumber = await getNextInvoiceNumber(session.user.businessId);
     const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Net 30
 
+    const invoiceCurrency = (job.currency || "NGN").toUpperCase();
+
     invoice = await prisma.invoice.create({
       data: {
         jobId: job.id,
@@ -112,6 +120,7 @@ export async function PATCH(
         lineItems: job.lineItems || "[]",
         subtotal: job.amount,
         total: job.amount,
+        currency: invoiceCurrency,
         status: "DRAFT",
         dueDate,
       },
@@ -129,7 +138,7 @@ export async function PATCH(
         entityId: invoice.id,
         eventType: "invoice.drafted",
         status: "SUCCESS",
-        detail: `Invoice ${invoiceNumber} automatically drafted (£${(job.amount / 100).toFixed(2)})`,
+        detail: `Invoice ${invoiceNumber} automatically drafted (${formatAmount(job.amount, invoiceCurrency)})`,
       },
     });
 

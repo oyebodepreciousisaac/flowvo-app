@@ -1,3 +1,5 @@
+import { escapeHtml } from "@/lib/security";
+
 export interface ReviewRequestEmailProps {
   customerName: string;
   businessName: string;
@@ -13,22 +15,23 @@ export function reviewRequestHtml({
   googleReviewUrl,
   unsubscribeUrl,
 }: ReviewRequestEmailProps): string {
-  const firstName = customerName.split(" ")[0] || "there";
+  const safeBusinessName = escapeHtml(businessName);
+  const firstName = escapeHtml(customerName.split(" ")[0] || "there");
   const serviceMention = serviceType
-    ? ` with your <strong>${serviceType}</strong>`
+    ? ` with your <strong>${escapeHtml(serviceType)}</strong>`
     : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>How did we do? — ${businessName}</title>
+  <title>How did we do? — ${safeBusinessName}</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1d1a; background-color: #f7f8f7; margin: 0; padding: 24px;">
   <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px;">
     <div style="margin-bottom: 24px;">
       <span style="font-size: 14px; font-weight: 700; color: #1e7a6a; letter-spacing: 0.02em; text-transform: uppercase;">
-        ${businessName}
+        ${safeBusinessName}
       </span>
       <h2 style="margin: 8px 0 0; font-size: 22px; font-weight: 700; color: #1a1d1a;">
         Thank you for choosing us!

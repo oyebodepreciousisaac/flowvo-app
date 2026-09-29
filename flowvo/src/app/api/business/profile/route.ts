@@ -2,13 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
+import { isSameOrigin, encryptField, decryptField } from "@/lib/security";
 import { isValidGoogleReviewUrl } from "@/lib/review";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Business name must be at least 2 characters").max(100),
   email: z.string().email("A valid business email is required"),
-  paymentDetails: z.string().max(1000).optional().nullable(),
+  phone: z.string().max(40).optional().nullable(),
+  address: z.string().max(300).optional().nullable(),
+  country: z.string().max(10).optional().default("GB"),
+  currency: z.string().max(6).optional().default("GBP"),
+  paymentGateway: z.enum(["MANUAL", "PAYSTACK", "STRIPE"]).optional().default("MANUAL"),
+  paystackPublicKey: z.string().max(200).optional().nullable(),
+  paystackSecretKey: z.string().max(200).optional().nullable(),
+  stripePublishableKey: z.string().max(200).optional().nullable(),
+  stripeSecretKey: z.string().max(200).optional().nullable(),
+  paymentsEnabled: z.boolean().optional().default(false),
+  paymentDetails: z.string().max(2000).optional().nullable(),
   quoteFollowUpDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   reviewReminderDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   googleReviewUrl: z
@@ -23,6 +33,10 @@ const profileSchema = z.object({
 });
 
 export async function PATCH(request: NextRequest) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,17 +57,60 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  const currentBusiness = await prisma.business.findUnique({
+    where: { id: session.user.businessId },
+  });
+
+  const encryptedPaymentDetails = result.data.paymentDetails
+    ? encryptField(result.data.paymentDetails)
+    : result.data.paymentDetails;
+
+  // Encrypt gateway secret keys if provided, or preserve existing if not altered
+  let paystackSecretKey = currentBusiness?.paystackSecretKey;
+  if (result.data.paystackSecretKey !== undefined) {
+    paystackSecretKey = result.data.paystackSecretKey
+      ? encryptField(result.data.paystackSecretKey)
+      : null;
+  }
+
+  let stripeSecretKey = currentBusiness?.stripeSecretKey;
+  if (result.data.stripeSecretKey !== undefined) {
+    stripeSecretKey = result.data.stripeSecretKey
+      ? encryptField(result.data.stripeSecretKey)
+      : null;
+  }
+
   const updated = await prisma.business.update({
     where: { id: session.user.businessId },
     data: {
       name: result.data.name,
       email: result.data.email,
-      paymentDetails: result.data.paymentDetails,
+      phone: result.data.phone ?? null,
+      address: result.data.address ?? null,
+      country: result.data.country ?? "GB",
+      currency: result.data.currency ?? "GBP",
+      paymentGateway: result.data.paymentGateway ?? "MANUAL",
+      paystackPublicKey: result.data.paystackPublicKey ?? null,
+      paystackSecretKey,
+      stripePublishableKey: result.data.stripePublishableKey ?? null,
+      stripeSecretKey,
+      paymentsEnabled: result.data.paymentsEnabled ?? false,
+      paymentDetails: encryptedPaymentDetails,
       quoteFollowUpDelayDays: result.data.quoteFollowUpDelayDays ?? 3,
       reviewReminderDelayDays: result.data.reviewReminderDelayDays ?? 4,
       googleReviewUrl: result.data.googleReviewUrl ? result.data.googleReviewUrl.trim() : null,
     },
   });
 
-  return NextResponse.json({ ok: true, business: updated });
+  return NextResponse.json({
+    ok: true,
+    business: {
+      ...updated,
+      paystackSecretKey: updated.paystackSecretKey ? "••••••••" : null,
+      stripeSecretKey: updated.stripeSecretKey ? "••••••••" : null,
+      hasPaystackSecret: !!updated.paystackSecretKey,
+      hasStripeSecret: !!updated.stripeSecretKey,
+      paymentDetails: decryptField(updated.paymentDetails),
+    },
+  });
 }

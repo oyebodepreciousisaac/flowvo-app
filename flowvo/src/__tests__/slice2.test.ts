@@ -15,7 +15,7 @@ describe("Slice 2: Email Templates", () => {
     });
 
     expect(html).toContain("Hi David,");
-    expect(html).toContain("Apex Plumbing & Heating");
+    expect(html).toContain("Apex Plumbing &amp; Heating");
     expect(html).toContain("Boiler Installation");
     // Spec requirement: No Flowvo branding in email body
     expect(html).not.toContain("Flowvo");

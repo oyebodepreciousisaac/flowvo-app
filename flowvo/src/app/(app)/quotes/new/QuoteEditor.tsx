@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { formatAmount, getCurrencySymbol } from "@/lib/currency";
 
 interface LeadData {
   id: string;
@@ -14,13 +15,14 @@ interface LeadData {
 
 interface QuoteEditorProps {
   lead: LeadData;
+  currency?: string;
 }
 
 interface EditableLineItem {
   id: string;
   description: string;
   quantity: number;
-  unitPriceStr: string; // user entered £ string e.g. "150.00"
+  unitPriceStr: string;
   unitPricePence: number;
   lineTotalPence: number;
 }
@@ -32,15 +34,9 @@ function parsePence(val: string): number {
   return Math.round(num * 100);
 }
 
-function formatPenceToGbp(pence: number): string {
-  return (pence / 100).toLocaleString("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  });
-}
-
-export function QuoteEditor({ lead }: QuoteEditorProps) {
+export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
   const router = useRouter();
+  const currencySymbol = getCurrencySymbol(currency);
 
   const [items, setItems] = useState<EditableLineItem[]>([
     {
@@ -139,6 +135,7 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId: lead.id,
+          currency,
           lineItems: items.map((it) => ({
             id: it.id,
             description: it.description,
@@ -251,20 +248,20 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
                 />
               </div>
 
-              {/* Unit price (£) */}
+              {/* Unit price */}
               <div className="w-32">
                 <label className="block sm:hidden text-[10px] font-semibold text-[var(--color-text-muted)] uppercase mb-1">
-                  Unit Price (£)
+                  Unit Price ({currencySymbol})
                 </label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2 text-xs text-[var(--color-text-muted)]">£</span>
+                  <span className="absolute left-2.5 top-2 text-xs text-[var(--color-text-muted)] font-mono">{currencySymbol}</span>
                   <input
                     type="text"
                     required
                     placeholder="0.00"
                     value={item.unitPriceStr}
                     onChange={(e) => updateItem(item.id, "unitPriceStr", e.target.value)}
-                    className="w-full h-9 pl-6 pr-3 text-xs text-right font-mono rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)]"
+                    className="w-full h-9 pl-7 pr-3 text-xs text-right font-mono rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)]"
                   />
                 </div>
               </div>
@@ -273,7 +270,7 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
               <div className="w-28 text-right sm:text-right flex items-center justify-between sm:justify-end gap-2">
                 <span className="block sm:hidden text-xs text-[var(--color-text-muted)]">Line total:</span>
                 <span className="font-mono font-semibold text-xs text-[var(--color-text)]">
-                  {formatPenceToGbp(item.lineTotalPence)}
+                  {formatAmount(item.lineTotalPence, currency)}
                 </span>
               </div>
 
@@ -284,7 +281,7 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
                   disabled={items.length <= 1}
                   onClick={() => removeItem(item.id)}
                   title="Remove item"
-                  className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-error)] disabled:opacity-20 transition-colors"
+                  className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-error)] disabled:opacity-20 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -298,13 +295,13 @@ export function QuoteEditor({ lead }: QuoteEditorProps) {
           <div className="flex items-center justify-between w-64 text-[var(--color-text-secondary)]">
             <span>Subtotal:</span>
             <span className="font-mono font-semibold text-[var(--color-text)]">
-              {formatPenceToGbp(subtotalPence)}
+              {formatAmount(subtotalPence, currency)}
             </span>
           </div>
           <div className="flex items-center justify-between w-64 pt-2 border-t border-[var(--color-border)] text-base font-bold text-[var(--color-text)]">
             <span>Quote Total:</span>
             <span className="font-mono text-lg text-[var(--color-primary)]">
-              {formatPenceToGbp(totalPence)}
+              {formatAmount(totalPence, currency)}
             </span>
           </div>
         </div>

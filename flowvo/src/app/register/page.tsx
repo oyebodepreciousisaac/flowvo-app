@@ -3,8 +3,77 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { checkPasswordStrength } from "@/lib/password";
+
+// ─── Password Strength Meter ──────────────────────────────────────────────────
+
+function PasswordStrengthMeter({ password }: { password: string }) {
+  const { score, label, rules } = checkPasswordStrength(password);
+
+  if (password.length === 0) return null;
+
+  const barColour = [
+    "",
+    "bg-red-500",       // 1 — weak
+    "bg-orange-400",    // 2 — fair
+    "bg-yellow-400",    // 3 — strong
+    "bg-green-500",     // 4 — very strong
+  ][score];
+
+  const labelColour = [
+    "",
+    "text-red-600",
+    "text-orange-500",
+    "text-yellow-600",
+    "text-green-600",
+  ][score];
+
+  return (
+    <div className="flex flex-col gap-2 mt-1">
+      {/* Segmented strength bar */}
+      <div className="flex items-center gap-1.5">
+        <div className="flex gap-1 flex-1">
+          {[1, 2, 3, 4].map((seg) => (
+            <div
+              key={seg}
+              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                score >= seg ? barColour : "bg-[var(--color-border)]"
+              }`}
+            />
+          ))}
+        </div>
+        <span className={`text-[11px] font-semibold capitalize w-20 text-right ${labelColour}`}>
+          {label}
+        </span>
+      </div>
+
+      {/* Rule checklist */}
+      <ul className="flex flex-col gap-1">
+        {rules.map((rule) => (
+          <li key={rule.label} className="flex items-center gap-1.5">
+            {rule.met ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+            ) : (
+              <XCircle className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+            )}
+            <span
+              className={`text-[11px] ${
+                rule.met ? "text-[var(--color-text-secondary)]" : "text-[var(--color-text-muted)]"
+              }`}
+            >
+              {rule.label}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ─── Register Page ────────────────────────────────────────────────────────────
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,12 +91,18 @@ export default function RegisterPage() {
     setErrors({});
     setServerError(null);
 
-    // Basic client-side validation
+    // Basic client-side pre-flight (full validation happens server-side)
     const fieldErrors: Record<string, string> = {};
     if (!businessName.trim()) fieldErrors.businessName = "Business name is required";
     if (!email.trim()) fieldErrors.email = "Email is required";
-    if (password.length < 8) fieldErrors.password = "Password must be at least 8 characters";
-    if (password !== confirmPassword) fieldErrors.confirmPassword = "Passwords do not match";
+
+    const { score } = checkPasswordStrength(password);
+    if (score < 4) {
+      fieldErrors.password = "Password does not meet the requirements below";
+    }
+    if (password !== confirmPassword) {
+      fieldErrors.confirmPassword = "Passwords do not match";
+    }
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
@@ -104,18 +179,24 @@ export default function RegisterPage() {
               error={errors.email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <Input
-              id="password"
-              label="Password"
-              type="password"
-              name="password"
-              autoComplete="new-password"
-              required
-              placeholder="Min. 8 characters"
-              value={password}
-              error={errors.password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+
+            {/* Password field with strength meter below */}
+            <div className="flex flex-col gap-0">
+              <Input
+                id="password"
+                label="Password"
+                type="password"
+                name="password"
+                autoComplete="new-password"
+                required
+                placeholder="Min. 8 characters"
+                value={password}
+                error={errors.password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <PasswordStrengthMeter password={password} />
+            </div>
+
             <Input
               id="confirmPassword"
               label="Confirm password"

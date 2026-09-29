@@ -1,7 +1,12 @@
 /**
  * Email template for lead acknowledgement sent to the customer.
  * No Flowvo branding in the body per spec.
+ *
+ * Security: all user-supplied strings (firstName, serviceType) are HTML-escaped
+ * before interpolation to prevent stored XSS via email clients that render HTML.
  */
+import { escapeHtml } from "@/lib/security";
+
 export function leadAcknowledgementHtml({
   firstName,
   businessName,
@@ -11,6 +16,10 @@ export function leadAcknowledgementHtml({
   businessName: string;
   serviceType: string;
 }): string {
+  const safeFirst = escapeHtml(firstName);
+  const safeBusiness = escapeHtml(businessName);
+  const safeService = escapeHtml(serviceType);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,13 +38,13 @@ export function leadAcknowledgementHtml({
 <body>
   <div class="wrapper">
     <div class="body">
-      <p>Hi ${firstName},</p>
-      <p>Thanks for getting in touch about <strong>${serviceType}</strong>. We've received your enquiry and will be in touch shortly.</p>
+      <p>Hi ${safeFirst},</p>
+      <p>Thanks for getting in touch about <strong>${safeService}</strong>. We've received your enquiry and will be in touch shortly.</p>
       <p>If you need to reach us in the meantime, just reply to this email.</p>
-      <p>Kind regards,<br /><strong>${businessName}</strong></p>
+      <p>Kind regards,<br /><strong>${safeBusiness}</strong></p>
     </div>
     <div class="footer">
-      <p>You're receiving this because you submitted an enquiry to ${businessName}.</p>
+      <p>You're receiving this because you submitted an enquiry to ${safeBusiness}.</p>
     </div>
   </div>
 </body>
@@ -51,6 +60,7 @@ export function leadAcknowledgementText({
   businessName: string;
   serviceType: string;
 }): string {
+  // Plain text version — no escaping needed, XSS only applies to HTML
   return `Hi ${firstName},
 
 Thanks for getting in touch about ${serviceType}. We've received your enquiry and will be in touch shortly.

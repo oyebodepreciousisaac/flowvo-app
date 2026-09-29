@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatAmount } from "@/lib/currency";
 
 export async function POST(
   request: NextRequest,
@@ -60,6 +61,8 @@ export async function POST(
     data: { status: "WON" },
   });
 
+  const quoteCurrency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+
   // Create Job if not already created
   let job = quote.jobs[0];
   if (!job) {
@@ -74,6 +77,7 @@ export async function POST(
         description: quote.lead.serviceType,
         lineItems: quote.lineItems,
         amount: quote.total,
+        currency: quoteCurrency,
         status: "SCHEDULED",
       },
     });
@@ -88,7 +92,7 @@ export async function POST(
         entityId: job.id,
         eventType: "job.created",
         status: "SUCCESS",
-        detail: `Job auto-created from accepted quote (£${(quote.total / 100).toFixed(2)})`,
+        detail: `Job auto-created from accepted quote (${formatAmount(quote.total, quoteCurrency)})`,
       },
     });
   }
@@ -103,7 +107,7 @@ export async function POST(
       entityId: quote.id,
       eventType: "quote.accepted",
       status: "SUCCESS",
-      detail: `Quote accepted for £${(quote.total / 100).toFixed(2)}`,
+      detail: `Quote accepted for ${formatAmount(quote.total, quoteCurrency)}`,
     },
   });
 

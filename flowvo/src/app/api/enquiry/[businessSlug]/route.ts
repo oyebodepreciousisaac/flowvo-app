@@ -3,25 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { leadAcknowledgementHtml, leadAcknowledgementText } from "@/lib/email-templates/lead-ack";
+import { rateLimit, getClientIp } from "@/lib/security";
 
-// ─── Rate limit store (in-memory; fine for single-process dev/Vercel cold-start)
-// In production with multiple Vercel instances this is per-instance.
-// Spec defers Redis until v2; this satisfies the exit condition for single-instance.
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 5;
+// ─── Rate limit: max 3 submissions per IP per hour per business
+const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true; // allowed
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false; // blocked
-  entry.count++;
-  return true; // allowed
-}
 
 // ─── Validation schema
 const enquirySchema = z.object({
@@ -33,6 +19,8 @@ const enquirySchema = z.object({
   description: z.string().min(10, "Please give a brief description (at least 10 characters)").max(2000),
   source:      z.string().max(80).optional(),
   turnstileToken: z.string().optional(),
+  // Honeypot field — bots fill this, humans cannot see it
+  website:     z.string().optional(),
 });
 
 // ─── POST /api/enquiry/[businessSlug]
@@ -41,13 +29,10 @@ export async function POST(
   context: { params: Promise<{ businessSlug: string }> }
 ) {
   const { businessSlug } = await context.params;
-  // Rate limit by IP
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = getClientIp(request);
 
-  if (!checkRateLimit(ip)) {
+  const { allowed } = rateLimit(`enquiry:${ip}:${businessSlug}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  if (!allowed) {
     return NextResponse.json(
       { error: "Too many submissions. Please try again in an hour." },
       { status: 429 }
@@ -78,6 +63,11 @@ export async function POST(
       { error: "Validation failed.", fields: result.error.flatten().fieldErrors },
       { status: 422 }
     );
+  }
+
+  // Honeypot check: reject bot submissions silently
+  if (result.data.website && result.data.website.trim().length > 0) {
+    return NextResponse.json({ ok: true, leadId: "suppressed" }, { status: 201 });
   }
 
   // Verify Turnstile if secret is configured

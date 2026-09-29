@@ -3,6 +3,8 @@ import { z } from "zod";
 import crypto from "crypto";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSameOrigin } from "@/lib/security";
+import { formatAmount } from "@/lib/currency";
 
 const lineItemSchema = z.object({
   id: z.string().optional(),
@@ -14,10 +16,15 @@ const lineItemSchema = z.object({
 
 const createQuoteSchema = z.object({
   leadId: z.string().min(1, "Lead ID is required"),
+  currency: z.string().optional(),
   lineItems: z.array(lineItemSchema).min(1, "At least one line item is required"),
 });
 
 export async function POST(request: NextRequest) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,26 +45,34 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { leadId, lineItems } = result.data;
+  const { leadId, lineItems, currency: inputCurrency } = result.data;
 
   // Validate lead belongs to user's business
-  const lead = await prisma.lead.findFirst({
-    where: {
-      id: leadId,
-      businessId: session.user.businessId,
-    },
-  });
+  const [lead, business] = await Promise.all([
+    prisma.lead.findFirst({
+      where: {
+        id: leadId,
+        businessId: session.user.businessId,
+      },
+    }),
+    prisma.business.findUnique({
+      where: { id: session.user.businessId },
+      select: { currency: true },
+    }),
+  ]);
 
   if (!lead) {
     return NextResponse.json({ error: "Lead not found" }, { status: 404 });
   }
 
+  const quoteCurrency = (inputCurrency || business?.currency || "NGN").toUpperCase();
+
   // Calculate totals
   const subtotal = lineItems.reduce((acc, item) => acc + item.lineTotalPence, 0);
   const total = subtotal;
 
-  // Generate unique quoteToken (12 random hex characters)
-  const quoteToken = crypto.randomBytes(8).toString("hex");
+  // Generate unique quoteToken (256 bits of entropy = 64 random hex characters)
+  const quoteToken = crypto.randomBytes(32).toString("hex");
 
   // Create Quote
   const quote = await prisma.quote.create({
@@ -65,6 +80,7 @@ export async function POST(request: NextRequest) {
       leadId: lead.id,
       businessId: session.user.businessId,
       quoteToken,
+      currency: quoteCurrency,
       lineItems: JSON.stringify(lineItems),
       subtotal,
       total,
@@ -90,7 +106,7 @@ export async function POST(request: NextRequest) {
       entityId: quote.id,
       eventType: "quote.created",
       status: "SUCCESS",
-      detail: `Quote draft created for ${(total / 100).toLocaleString("en-GB", { style: "currency", currency: "GBP" })}`,
+      detail: `Quote draft created for ${formatAmount(total, quoteCurrency)}`,
     },
   });
 

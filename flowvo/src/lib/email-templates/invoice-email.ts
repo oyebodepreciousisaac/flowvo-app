@@ -1,4 +1,6 @@
 import { formatPence, LineItem } from "./quote-email";
+import { escapeHtml } from "@/lib/security";
+import { formatAmount, getCurrencySymbol } from "@/lib/currency";
 
 export function invoiceEmailHtml({
   invoiceNumber,
@@ -8,6 +10,8 @@ export function invoiceEmailHtml({
   totalPence,
   dueDate,
   paymentDetails,
+  currency = "GBP",
+  paymentLinkUrl,
 }: {
   invoiceNumber: string;
   customerName: string;
@@ -16,8 +20,14 @@ export function invoiceEmailHtml({
   totalPence: number;
   dueDate: Date;
   paymentDetails?: string | null;
+  currency?: string;
+  paymentLinkUrl?: string | null;
 }): string {
-  const firstName = customerName.split(" ")[0] || "there";
+  const safeInvoiceNumber = escapeHtml(invoiceNumber);
+  const safeBusinessName = escapeHtml(businessName);
+  const firstName = escapeHtml(customerName.split(" ")[0] || "there");
+  const safePaymentDetails = paymentDetails ? escapeHtml(paymentDetails) : null;
+  const currencySymbol = getCurrencySymbol(currency);
   const dueDateStr = new Date(dueDate).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -29,16 +39,16 @@ export function invoiceEmailHtml({
       (item) => `
     <tr>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">
-        ${item.description}
+        ${escapeHtml(item.description)}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 14px; text-align: center;">
         ${item.quantity}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 14px; text-align: right;">
-        ${formatPence(item.unitPricePence)}
+        ${formatAmount(item.unitPricePence, currency)}
       </td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #111827; font-size: 14px; font-weight: 600; text-align: right;">
-        ${formatPence(item.lineTotalPence)}
+        ${formatAmount(item.lineTotalPence, currency)}
       </td>
     </tr>`
     )
@@ -48,16 +58,16 @@ export function invoiceEmailHtml({
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Invoice ${invoiceNumber} from ${businessName}</title>
+  <title>Invoice ${safeInvoiceNumber} from ${safeBusinessName}</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1d1a; background-color: #f7f8f7; margin: 0; padding: 24px;">
   <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px;">
     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px;">
       <h2 style="margin: 0; font-size: 22px; font-weight: 700; color: #1a1d1a;">
-        Invoice ${invoiceNumber}
+        Invoice ${safeInvoiceNumber}
       </h2>
       <span style="font-size: 14px; font-weight: 600; color: #1e7a6a;">
-        ${businessName}
+        ${safeBusinessName}
       </span>
     </div>
 
@@ -86,19 +96,29 @@ export function invoiceEmailHtml({
             Total Due:
           </td>
           <td style="padding: 14px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #1e7a6a;">
-            ${formatPence(totalPence)}
+            ${formatAmount(totalPence, currency)}
           </td>
         </tr>
       </tfoot>
     </table>
 
     ${
-      paymentDetails
+      paymentLinkUrl
+        ? `<div style="text-align: center; margin: 32px 0 28px;">
+        <a href="${paymentLinkUrl}" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 15px; font-weight: 700; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          Pay Online Now (${currencySymbol}) — Card / Transfer / USSD
+        </a>
+      </div>`
+        : ""
+    }
+
+    ${
+      safePaymentDetails
         ? `<div style="background-color: #f0f1f0; border-radius: 6px; padding: 16px; margin: 24px 0;">
         <h4 style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; color: #4a5150; font-weight: 600;">
-          Payment Details
+          Direct Bank Payment Details
         </h4>
-        <div style="font-size: 13px; color: #1a1d1a; white-space: pre-wrap; font-family: monospace;">${paymentDetails}</div>
+        <div style="font-size: 13px; color: #1a1d1a; white-space: pre-wrap; font-family: monospace;">${safePaymentDetails}</div>
       </div>`
         : ""
     }
@@ -119,6 +139,8 @@ export function invoiceEmailText({
   totalPence,
   dueDate,
   paymentDetails,
+  currency = "GBP",
+  paymentLinkUrl,
 }: {
   invoiceNumber: string;
   customerName: string;
@@ -127,6 +149,8 @@ export function invoiceEmailText({
   totalPence: number;
   dueDate: Date;
   paymentDetails?: string | null;
+  currency?: string;
+  paymentLinkUrl?: string | null;
 }): string {
   const firstName = customerName.split(" ")[0] || "there";
   const dueDateStr = new Date(dueDate).toLocaleDateString("en-GB", {
@@ -138,7 +162,7 @@ export function invoiceEmailText({
   const itemsText = lineItems
     .map(
       (item) =>
-        `- ${item.description}: ${item.quantity} x ${formatPence(item.unitPricePence)} = ${formatPence(item.lineTotalPence)}`
+        `- ${item.description}: ${item.quantity} x ${formatAmount(item.unitPricePence, currency)} = ${formatAmount(item.lineTotalPence, currency)}`
     )
     .join("\n");
 
@@ -150,9 +174,9 @@ Thank you for your business. Please find below the itemized invoice for complete
 
 ${itemsText}
 
-Total Due: ${formatPence(totalPence)}
+Total Due: ${formatAmount(totalPence, currency)}
 
-${paymentDetails ? `Payment Details:\n${paymentDetails}\n\n` : ""}If you have questions, reply directly to this email.
+${paymentLinkUrl ? `Pay Online Securely (Card, Bank Transfer, USSD):\n${paymentLinkUrl}\n\n` : ""}${paymentDetails ? `Direct Bank Transfer Details:\n${paymentDetails}\n\n` : ""}If you have questions, reply directly to this email.
 
 Best regards,
 ${businessName}`;

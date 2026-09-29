@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
-import { formatPence } from "@/lib/invoice";
+import { formatAmount } from "@/lib/currency";
 import { FileText, ArrowRight, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
 
 export const metadata: Metadata = { title: "Invoices — Flowvo" };
@@ -14,6 +14,12 @@ export default async function InvoicesPage() {
   if (!session) {
     redirect("/login");
   }
+
+  const business = await prisma.business.findUnique({
+    where: { id: session.user.businessId },
+    select: { currency: true },
+  });
+  const businessCurrency = business?.currency || "NGN";
 
   const allInvoices = await prisma.invoice.findMany({
     where: { businessId: session.user.businessId },
@@ -83,7 +89,7 @@ export default async function InvoicesPage() {
             Outstanding Balance
           </span>
           <div className="mt-1 font-mono text-xl font-bold text-[var(--color-text)]">
-            {formatPence(outstandingTotalPence)}
+            {formatAmount(outstandingTotalPence, businessCurrency)}
           </div>
           <span className="text-[11px] text-[var(--color-text-muted)]">
             {sentInvoices.length + draftInvoices.length} active invoices
@@ -102,7 +108,7 @@ export default async function InvoicesPage() {
             Overdue
           </span>
           <div className="mt-1 font-mono text-xl font-bold text-[var(--color-error)]">
-            {formatPence(overdueTotalPence)}
+            {formatAmount(overdueTotalPence, businessCurrency)}
           </div>
           <span className="text-[11px] text-[var(--color-error)]">
             {overdueInvoices.length} past due
@@ -115,7 +121,7 @@ export default async function InvoicesPage() {
             Paid to Date
           </span>
           <div className="mt-1 font-mono text-xl font-bold text-[var(--color-primary)]">
-            {formatPence(paidTotalPence)}
+            {formatAmount(paidTotalPence, businessCurrency)}
           </div>
           <span className="text-[11px] text-[var(--color-text-muted)]">
             {paidInvoices.length} completed payments
@@ -200,7 +206,7 @@ export default async function InvoicesPage() {
                 <div className="flex items-center justify-between sm:justify-end gap-5 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]">
                   <div className="text-left sm:text-right">
                     <span className="font-mono text-lg font-bold text-[var(--color-text)] block">
-                      {formatPence(invoice.total)}
+                      {formatAmount(invoice.total, invoice.currency || businessCurrency)}
                     </span>
                     <span className="text-[11px] text-[var(--color-text-muted)] block">
                       {isDraft ? "Draft — not sent" : isSent ? "Awaiting payment" : isOverdue ? "Payment past due" : "Received"}

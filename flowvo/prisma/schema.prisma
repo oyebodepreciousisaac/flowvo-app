@@ -8,24 +8,38 @@ datasource db {
 }
 
 model Business {
-  id              String          @id @default(cuid())
-  name            String
-  slug            String          @unique
-  email           String
-  phone           String?
+  id                      String          @id @default(cuid())
+  name                    String
+  slug                    String          @unique
+  email                   String
+  phone                   String?
+  address                 String?
+  country                 String          @default("GB") // "GB", "NG", "US", "DE", etc.
+  currency                String          @default("GBP") // "GBP", "NGN", "EUR", "USD"
+  paymentGateway          String          @default("MANUAL") // "MANUAL" | "PAYSTACK" | "STRIPE"
+  paystackPublicKey       String?
+  paystackSecretKey       String?         // Stored encrypted (AES-256-GCM)
+  paystackSubaccountCode  String?         // Paystack Subaccount code e.g. "ACCT_xxxx"
+  bankName                String?         // Settlement bank name e.g. "Guaranty Trust Bank"
+  bankCode                String?         // Settlement bank 3-digit CBN code e.g. "058"
+  bankAccountNumber       String?         // 10-digit NUBAN
+  bankAccountName         String?         // Verified account name from Paystack resolve
+  stripePublishableKey    String?
+  stripeSecretKey         String?         // Stored encrypted (AES-256-GCM)
+  paymentsEnabled         Boolean         @default(false)
   googleReviewUrl         String?
-  paymentDetails          String?
+  paymentDetails          String?         // JSON stringified structured bank details or legacy text
   quoteFollowUpDelayDays  Int             @default(3)
   reviewReminderDelayDays Int             @default(4)
   createdAt               DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  users           User[]
-  leads           Lead[]
-  quotes          Quote[]
-  jobs            Job[]
-  invoices        Invoice[]
-  reviewRequests  ReviewRequest[]
-  activityLogs    ActivityLog[]
+  updatedAt               DateTime        @updatedAt
+  users                   User[]
+  leads                   Lead[]
+  quotes                  Quote[]
+  jobs                    Job[]
+  invoices                Invoice[]
+  reviewRequests          ReviewRequest[]
+  activityLogs            ActivityLog[]
 }
 
 model User {
@@ -93,8 +107,9 @@ model Quote {
   business       Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
   quoteToken     String        @unique
   lineItems      String        // JSON stringified array of line items
-  subtotal       Int           // in pence (£1.00 = 100)
-  total          Int           // in pence
+  subtotal       Int           // in smallest unit (£1.00 = 100, ₦1.00 = 100)
+  total          Int           // in smallest unit
+  currency       String        @default("GBP") // "GBP", "NGN", "EUR", "USD"
   status         String        @default("DRAFT") // DRAFT | SENT | ACCEPTED | DECLINED
   sentAt         DateTime?
   followUpSentAt DateTime?
@@ -122,7 +137,8 @@ model Job {
   customerPhone  String
   description    String
   lineItems      String?         // JSON stringified
-  amount         Int             // pence
+  amount         Int             // in smallest unit
+  currency       String          @default("GBP") // "GBP", "NGN", "EUR", "USD"
   scheduledDate  DateTime?
   status         String          @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETE
   completedAt    DateTime?
@@ -149,8 +165,12 @@ model Invoice {
   customerEmail       String
   invoiceNumber       String          // e.g. "INV-001"
   lineItems           String          // JSON stringified
-  subtotal            Int             // in pence
-  total               Int             // in pence
+  subtotal            Int             // in pence/kobo/cents (smallest currency unit)
+  total               Int             // in pence/kobo/cents
+  currency            String          @default("GBP") // "GBP", "NGN", "EUR", "USD"
+  paymentLinkUrl      String?
+  paymentReference    String?         @unique
+  gatewayPaymentId    String?
   status              String          @default("DRAFT") // DRAFT | SENT | PAID | OVERDUE
   sentAt              DateTime?
   paidAt              DateTime?
@@ -162,6 +182,7 @@ model Invoice {
   updatedAt           DateTime        @updatedAt
 
   @@index([businessId, status, dueDate])
+  @@index([paymentReference])
 }
 
 model ReviewRequest {

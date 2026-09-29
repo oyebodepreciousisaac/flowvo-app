@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Send, CheckCircle2, AlertCircle, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Send, CheckCircle2, AlertCircle, AlertTriangle, Printer, Copy, Check, ExternalLink } from "lucide-react";
 
 interface InvoiceDetailActionsProps {
   invoiceId: string;
@@ -13,6 +14,7 @@ interface InvoiceDetailActionsProps {
   currentStatus: string;
   emailDeliveryStatus: string;
   dueDateFormatted: string;
+  paymentLinkUrl?: string | null;
 }
 
 export function InvoiceDetailActions({
@@ -24,6 +26,7 @@ export function InvoiceDetailActions({
   currentStatus,
   emailDeliveryStatus,
   dueDateFormatted,
+  paymentLinkUrl,
 }: InvoiceDetailActionsProps) {
   const router = useRouter();
 
@@ -31,6 +34,14 @@ export function InvoiceDetailActions({
   const [showSendModal, setShowSendModal] = useState(false);
   const [showPaidModal, setShowPaidModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  function copyPaymentLink() {
+    if (!paymentLinkUrl) return;
+    navigator.clipboard.writeText(paymentLinkUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  }
 
   async function handleSendInvoice() {
     setLoading(true);
@@ -99,7 +110,7 @@ export function InvoiceDetailActions({
             type="button"
             disabled={loading}
             onClick={() => setShowSendModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Review &amp; send invoice</span>
@@ -111,7 +122,7 @@ export function InvoiceDetailActions({
             type="button"
             disabled={loading}
             onClick={() => setShowPaidModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Mark as paid</span>
@@ -122,6 +133,51 @@ export function InvoiceDetailActions({
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-status-complete)] text-[var(--color-primary)] text-xs font-semibold">
             <CheckCircle2 className="w-4 h-4" />
             <span>Paid in full</span>
+          </div>
+        )}
+
+        {/* Dedicated Printable Invoice Trigger */}
+        <Link
+          href={`/invoices/${invoiceId}/print`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-xs"
+        >
+          <Printer className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+          <span>Print / Save PDF</span>
+        </Link>
+
+        {/* Online Payment Link Shortcuts */}
+        {paymentLinkUrl && currentStatus !== "PAID" && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copyPaymentLink}
+              className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors cursor-pointer"
+              title="Copy customer payment link to clipboard"
+            >
+              {copiedLink ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                  <span className="text-[var(--color-primary)]">Copied Link!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+                  <span>Copy Payment Link</span>
+                </>
+              )}
+            </button>
+
+            <a
+              href={paymentLinkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--color-primary-subtle)] text-[var(--color-primary)] hover:bg-[#d6ece7] text-xs font-semibold rounded-[var(--radius-md)] transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Customer Payment Portal</span>
+            </a>
           </div>
         )}
       </div>

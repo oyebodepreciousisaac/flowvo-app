@@ -24,13 +24,32 @@
   --color-primary-active: #0F4840;
   --color-primary-subtle: #E8F5F2;
 
-  /* Status colours — semantic */
-  --color-status-new: #E8F5F2;
-  --color-status-action: #FFF4E0;
-  --color-status-warning: #FFF4E0;
-  --color-status-overdue: #FDECEA;
-  --color-status-complete: #E8F5F2;
-  --color-status-lost: #F3F3F3;
+  /* Status colours — 6-tier semantic system (research-backed, see docs/14-IMPROVEMENT-BACKLOG.md) */
+  /* Blue  — NEW, SCHEDULED  (informational — not started yet) */
+  --color-status-blue: #DBEAFE;
+  --color-status-blue-text: #1D4ED8;
+  /* Amber — CONTACTED, IN_PROGRESS, ACTION_NEEDED  (in-motion — pending action) */
+  --color-status-amber: #FEF3C7;
+  --color-status-amber-text: #B45309;
+  /* Violet — QUOTED, SENT  (advanced stage — awaiting decision / payment) */
+  --color-status-violet: #EDE9FE;
+  --color-status-violet-text: #6D28D9;
+  /* Green — WON, COMPLETE, PAID  (positive outcome) */
+  --color-status-green: #D1FAE5;
+  --color-status-green-text: #065F46;
+  /* Grey — DRAFT  (not yet sent) */
+  --color-status-grey: #F3F4F6;
+  --color-status-grey-text: #6B7280;
+  /* Red — LOST, DECLINED, OVERDUE  (negative / danger) */
+  --color-status-red: #FEE2E2;
+  --color-status-red-text: #DC2626;
+  /* Legacy aliases kept for any code that still references them */
+  --color-status-new: #D1FAE5;
+  --color-status-action: #FEF3C7;
+  --color-status-warning: #FEF3C7;
+  --color-status-overdue: #FEE2E2;
+  --color-status-complete: #D1FAE5;
+  --color-status-lost: #F3F4F6;
 
   /* Semantic system */
   --color-success: #1E7A6A;
@@ -92,3 +111,140 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }
+
+/* ─── Dark Mode ──────────────────────────────────────────────────────────────
+   Two ways to activate dark mode:
+   1. System: @media (prefers-color-scheme: dark)  — automatic OS matching
+   2. Manual: [data-theme="dark"] on <html>         — user toggle preference
+   Manual always wins over system (specificity: attribute > @media).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Base surfaces */
+    --color-bg: #0f1117;
+    --color-surface: #1a1d27;
+    --color-surface-muted: #22263a;
+    --color-surface-raised: #1f2235;
+
+    /* Text */
+    --color-text: #f0f2f8;
+    --color-text-secondary: #9aa3c2;
+    --color-text-muted: #5c6480;
+    --color-text-on-primary: #ffffff;
+
+    /* Border */
+    --color-border: #2e3347;
+    --color-border-strong: #4a5270;
+    --color-border-focus: #22d3aa;
+
+    /* Primary — lighter teal for dark backgrounds */
+    --color-primary: #22d3aa;
+    --color-primary-hover: #2de3b8;
+    --color-primary-active: #1ab896;
+    --color-primary-subtle: #0d2e28;
+
+    /* Status — dark-mode friendly versions */
+    --color-status-blue: #1e3a5f;
+    --color-status-blue-text: #60a5fa;
+    --color-status-amber: #3d2e00;
+    --color-status-amber-text: #fbbf24;
+    --color-status-violet: #2e1f5e;
+    --color-status-violet-text: #c4b5fd;
+    --color-status-green: #0d2e20;
+    --color-status-green-text: #34d399;
+    --color-status-grey: #1e2130;
+    --color-status-grey-text: #9aa3c2;
+    --color-status-red: #3b1515;
+    --color-status-red-text: #f87171;
+
+    /* Legacy aliases */
+    --color-status-new: #0d2e20;
+    --color-status-action: #3d2e00;
+    --color-status-warning: #3d2e00;
+    --color-status-overdue: #3b1515;
+    --color-status-complete: #0d2e20;
+    --color-status-lost: #1e2130;
+
+    /* Semantic system */
+    --color-success: #22d3aa;
+    --color-success-bg: #0d2e20;
+    --color-warning: #fbbf24;
+    --color-warning-bg: #3d2e00;
+    --color-error: #f87171;
+    --color-error-bg: #3b1515;
+    --color-info: #60a5fa;
+    --color-info-bg: #1e3a5f;
+
+    /* Overlay */
+    --color-overlay: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Manual dark override — applied via js when user clicks the toggle */
+[data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-muted: #22263a;
+  --color-surface-raised: #1f2235;
+  --color-text: #f0f2f8;
+  --color-text-secondary: #9aa3c2;
+  --color-text-muted: #5c6480;
+  --color-text-on-primary: #ffffff;
+  --color-border: #2e3347;
+  --color-border-strong: #4a5270;
+  --color-border-focus: #22d3aa;
+  --color-primary: #22d3aa;
+  --color-primary-hover: #2de3b8;
+  --color-primary-active: #1ab896;
+  --color-primary-subtle: #0d2e28;
+  --color-status-blue: #1e3a5f;
+  --color-status-blue-text: #60a5fa;
+  --color-status-amber: #3d2e00;
+  --color-status-amber-text: #fbbf24;
+  --color-status-violet: #2e1f5e;
+  --color-status-violet-text: #c4b5fd;
+  --color-status-green: #0d2e20;
+  --color-status-green-text: #34d399;
+  --color-status-grey: #1e2130;
+  --color-status-grey-text: #9aa3c2;
+  --color-status-red: #3b1515;
+  --color-status-red-text: #f87171;
+  --color-status-new: #0d2e20;
+  --color-status-action: #3d2e00;
+  --color-status-warning: #3d2e00;
+  --color-status-overdue: #3b1515;
+  --color-status-complete: #0d2e20;
+  --color-status-lost: #1e2130;
+  --color-success: #22d3aa;
+  --color-success-bg: #0d2e20;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #3d2e00;
+  --color-error: #f87171;
+  --color-error-bg: #3b1515;
+  --color-info: #60a5fa;
+  --color-info-bg: #1e3a5f;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Print Styles ─────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+}
+

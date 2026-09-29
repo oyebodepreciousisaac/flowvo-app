@@ -3,11 +3,17 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { quoteEmailHtml, quoteEmailText, LineItem } from "@/lib/email-templates/quote-email";
+import { isSameOrigin } from "@/lib/security";
+import { formatAmount } from "@/lib/currency";
 
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,19 +47,21 @@ export async function POST(
   // Build public accept URL
   const origin = request.nextUrl.origin || "http://localhost:3000";
   const acceptUrl = `${origin}/q/${quote.quoteToken}`;
+  const quoteCurrency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
 
   // Send email to customer
   const emailRes = await sendEmail({
     to: quote.lead.email,
     replyTo: quote.business.email,
     fromName: quote.business.name,
-    subject: `Quote from ${quote.business.name} — £${(quote.total / 100).toFixed(2)}`,
+    subject: `Quote from ${quote.business.name} — ${formatAmount(quote.total, quoteCurrency)}`,
     html: quoteEmailHtml({
       customerName: quote.lead.customerName,
       businessName: quote.business.name,
       lineItems,
       totalPence: quote.total,
       acceptUrl,
+      currency: quoteCurrency,
     }),
     text: quoteEmailText({
       customerName: quote.lead.customerName,
@@ -61,6 +69,7 @@ export async function POST(
       lineItems,
       totalPence: quote.total,
       acceptUrl,
+      currency: quoteCurrency,
     }),
   });
 

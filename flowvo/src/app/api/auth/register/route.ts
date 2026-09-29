@@ -1,19 +1,40 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, createSession, generateSlug } from "@/lib/auth";
+import { strongPasswordSchema } from "@/lib/password";
+import { rateLimit, getClientIp, isSameOrigin } from "@/lib/security";
 
-const registerSchema = z.object({
-  businessName: z.string().min(1, "Business name is required").max(100, "Business name must be 100 characters or fewer"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+// 3 registrations per IP per hour — prevents mass account creation
+const REGISTER_LIMIT = 3;
+const REGISTER_WINDOW_MS = 60 * 60 * 1000;
 
-export async function POST(request: Request) {
+const registerSchema = z
+  .object({
+    businessName: z.string().min(1, "Business name is required").max(100, "Business name must be 100 characters or fewer"),
+    email: z.string().email("Invalid email address"),
+    password: strongPasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export async function POST(request: NextRequest) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const ip = getClientIp(request);
+  const { allowed, retryAfterMs } = rateLimit(`register:${ip}`, REGISTER_LIMIT, REGISTER_WINDOW_MS);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);

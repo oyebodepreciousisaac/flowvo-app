@@ -1,14 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { rateLimit, getClientIp, isSameOrigin } from "@/lib/security";
+
+const FORGOT_LIMIT = 3;
+const FORGOT_WINDOW_MS = 60 * 60 * 1000; // 3 attempts per IP per hour
 
 const forgotSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const ip = getClientIp(request);
+  const { allowed } = rateLimit(`forgot:${ip}`, FORGOT_LIMIT, FORGOT_WINDOW_MS);
+  // Still return 200 so attackers can't detect rate limiting on this endpoint
+  if (!allowed) return NextResponse.json({ ok: true });
+
   try {
     const body = await request.json();
     const parsed = forgotSchema.safeParse(body);
