@@ -221,7 +221,16 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
         .then((res) => res.json())
         .then((data) => {
           if (data.banks && Array.isArray(data.banks) && data.banks.length > 0) {
-            setBanksList(data.banks);
+            const seen = new Set<string>();
+            const unique: { name: string; code: string }[] = [];
+            for (const b of data.banks) {
+              const c = String(b.code || "").trim();
+              if (c && !seen.has(c)) {
+                seen.add(c);
+                unique.push({ name: String(b.name || "").trim(), code: c });
+              }
+            }
+            setBanksList(unique);
           }
         })
         .catch(() => {})
@@ -603,8 +612,8 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
                   className="w-full h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
                 >
                   <option value="">-- Select Your Bank --</option>
-                  {banksList.map((b) => (
-                    <option key={`${b.code}-${b.name}`} value={b.code}>
+                  {banksList.map((b, idx) => (
+                    <option key={`bank-${b.code}-${idx}`} value={b.code}>
                       {b.name}
                     </option>
                   ))}

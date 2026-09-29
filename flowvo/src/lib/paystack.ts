@@ -270,9 +270,18 @@ export async function listPaystackBanks(
 
       const data = await res.json();
       if (data.status && Array.isArray(data.data) && data.data.length > 0) {
+        const seenCodes = new Set<string>();
+        const uniqueBanks: { name: string; code: string }[] = [];
+        for (const b of data.data) {
+          const code = String(b.code || "").trim();
+          if (code && !seenCodes.has(code)) {
+            seenCodes.add(code);
+            uniqueBanks.push({ name: String(b.name || "").trim(), code });
+          }
+        }
         return {
           status: true,
-          banks: data.data.map((b: PaystackBank) => ({ name: b.name, code: b.code })),
+          banks: uniqueBanks,
         };
       }
     } catch {
