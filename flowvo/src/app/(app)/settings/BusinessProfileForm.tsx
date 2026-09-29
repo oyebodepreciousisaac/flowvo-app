@@ -17,6 +17,8 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  Image as ImageIcon,
+  MessageCircle,
 } from "lucide-react";
 import { SUPPORTED_COUNTRIES, SUPPORTED_CURRENCIES } from "@/lib/currency";
 
@@ -27,6 +29,8 @@ interface BusinessProfileFormProps {
     email: string;
     phone?: string | null;
     address?: string | null;
+    logoUrl?: string | null;
+    notificationPhone?: string | null;
     country?: string;
     currency?: string;
     paymentGateway?: string;
@@ -55,6 +59,8 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   const [email, setEmail] = useState(initialBusiness.email);
   const [phone, setPhone] = useState(initialBusiness.phone || "");
   const [address, setAddress] = useState(initialBusiness.address || "");
+  const [logoUrl, setLogoUrl] = useState(initialBusiness.logoUrl || "");
+  const [notificationPhone, setNotificationPhone] = useState(initialBusiness.notificationPhone || "");
 
   // Multi-Currency & Gateway
   const [country, setCountry] = useState(initialBusiness.country || "GB");
@@ -313,6 +319,8 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
         googleReviewUrl: googleReviewUrl.trim() || null,
         quoteFollowUpDelayDays: Number(quoteFollowUpDelayDays),
         reviewReminderDelayDays: Number(reviewReminderDelayDays),
+        logoUrl: logoUrl.trim() || null,
+        notificationPhone: notificationPhone.trim() || null,
       };
 
       if (paystackSecretKey) payload.paystackSecretKey = paystackSecretKey.trim();
@@ -473,14 +481,75 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
             />
           </div>
         </div>
+
+        {/* Business Logo & Owner WhatsApp Alerts */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          {/* Business Logo */}
+          <div>
+            <label htmlFor="bizLogo" className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+              Business Logo URL <span className="font-normal text-[var(--color-text-muted)] lowercase">(shown on quotes &amp; invoices)</span>
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-muted)] flex items-center justify-center shrink-0 overflow-hidden">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt="Logo preview"
+                    className="w-full h-full object-contain p-0.5"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-[var(--color-text-muted)]" />
+                )}
+              </div>
+              <input
+                id="bizLogo"
+                type="url"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://.../logo.png"
+                className="flex-1 h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+              Direct image link (.png, .jpg, or .svg). Displayed at the top of customer quotes and payment invoices.
+            </p>
+          </div>
+
+          {/* Owner WhatsApp Notification Phone */}
+          <div>
+            <label htmlFor="bizNotificationPhone" className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+              Owner WhatsApp Alert Number <span className="font-normal text-[var(--color-text-muted)] lowercase">(private to you)</span>
+            </label>
+            <input
+              id="bizNotificationPhone"
+              type="tel"
+              value={notificationPhone}
+              onChange={(e) => setNotificationPhone(e.target.value)}
+              placeholder="e.g. +234 801 234 5678 or 08012345678"
+              className="w-full h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+            />
+            <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+              🔔 Instant notifications: Leads, quote approvals, and invoice payments trigger instant alerts directly to this WhatsApp number so you don&apos;t have to stay 24/7 on the app.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* ── Section 2: Country, Currency & Payment Gateway ────────────────── */}
+      {/* ── Section 2: Country, Currency & Customer Payout Collection ───────── */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-[var(--color-text)] flex items-center gap-2 border-b border-[var(--color-border)] pb-2">
-          <Globe2 className="w-4 h-4 text-[var(--color-primary)]" />
-          Country, Currency &amp; Payment Gateway
-        </h3>
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] flex items-center gap-2 border-b border-[var(--color-border)] pb-2">
+            <Globe2 className="w-4 h-4 text-[var(--color-primary)]" />
+            Country, Currency &amp; Customer Payment Collection
+          </h3>
+          <p className="mt-1.5 text-xs text-[var(--color-text-secondary)]">
+            Configure how your customers pay on their public invoice view (cards, bank transfer, USSD), and where those payments settle into your business account.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

@@ -11,7 +11,7 @@ export async function GET() {
   const businessId = session.user.businessId;
 
   try {
-    const [latestActivity, newLeads, openQuotes, inProgressJobs, unpaidInvoices] =
+    const [latestActivity, recentActivities, newLeads, openQuotes, inProgressJobs, unpaidInvoices] =
       await Promise.all([
         prisma.activityLog.findFirst({
           where: { businessId },
@@ -20,6 +20,23 @@ export async function GET() {
             id: true,
             eventType: true,
             status: true,
+            detail: true,
+            occurredAt: true,
+          },
+        }),
+        prisma.activityLog.findMany({
+          where: { businessId },
+          orderBy: { occurredAt: "desc" },
+          take: 8,
+          select: {
+            id: true,
+            eventType: true,
+            entityType: true,
+            entityId: true,
+            leadId: true,
+            quoteId: true,
+            jobId: true,
+            invoiceId: true,
             detail: true,
             occurredAt: true,
           },
@@ -46,6 +63,7 @@ export async function GET() {
       timestamp: Date.now(),
       fingerprint,
       latestActivity,
+      recentActivities,
       counts: {
         newLeads,
         openQuotes,

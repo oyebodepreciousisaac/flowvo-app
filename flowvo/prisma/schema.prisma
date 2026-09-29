@@ -30,6 +30,9 @@ model Business {
   paymentsEnabled         Boolean         @default(false)
   googleReviewUrl         String?
   paymentDetails          String?         // JSON stringified structured bank details or legacy text
+  logoUrl                 String?         // Business logo URL or base64
+  notificationPhone       String?         // Owner WhatsApp number for instant alerts
+  pushSubscriptions       String?         // JSON array of Web Push subscriptions
   quoteFollowUpDelayDays  Int             @default(3)
   reviewReminderDelayDays Int             @default(4)
   createdAt               DateTime        @default(now())

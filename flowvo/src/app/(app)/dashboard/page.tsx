@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatPence } from "@/lib/invoice";
+import { formatAmount } from "@/lib/currency";
 import {
   AlertTriangle,
   AlertCircle,
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
       severity: "danger",
       category: "Overdue Invoice",
       title: `Invoice ${inv.invoiceNumber} for ${inv.customerName} is ${daysOverdue} ${daysOverdue === 1 ? "day" : "days"} overdue`,
-      description: `Payment of ${formatPence(inv.total)} was due on ${new Date(inv.dueDate).toLocaleDateString("en-GB")}.`,
+      description: `Payment of ${formatAmount(inv.total, inv.currency || "NGN")} was due on ${new Date(inv.dueDate).toLocaleDateString("en-GB")}.`,
       actionLabel: "View invoice",
       actionHref: `/invoices/${inv.id}`,
     });
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
       severity: "warning",
       category: "Invoice Ready",
       title: `Invoice draft ready for ${draft.customerName}`,
-      description: `Draft for ${formatPence(draft.total)} auto-generated from completed work awaiting your approval.`,
+      description: `Draft for ${formatAmount(draft.total, draft.currency || "NGN")} auto-generated from completed work awaiting your approval.`,
       actionLabel: "Review & send",
       actionHref: `/invoices/${draft.id}`,
     });
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
       severity: "warning",
       category: "Quote Follow-up",
       title: `Quote for ${quote.lead.customerName} sent ${daysSince} days ago with no response`,
-      description: `Total quote value: ${formatPence(quote.total)}. Consider calling the customer directly.`,
+      description: `Total quote value: ${formatAmount(quote.total, quote.currency || "NGN")}. Consider calling the customer directly.`,
       actionLabel: "View quote",
       actionHref: `/quotes/${quote.id}`,
     });

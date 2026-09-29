@@ -47,6 +47,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     },
     include: {
       business: true,
+      lead: true,
       job: true,
       quote: true,
       activityLogs: {
@@ -194,6 +195,8 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             invoiceNumber={invoice.invoiceNumber}
             customerName={invoice.customerName}
             customerEmail={invoice.customerEmail}
+            customerPhone={invoice.lead?.phone || invoice.job?.customerPhone || null}
+            businessName={invoice.business.name}
             totalFormatted={totalFormatted}
             currentStatus={invoice.status}
             emailDeliveryStatus={invoice.emailDeliveryStatus}

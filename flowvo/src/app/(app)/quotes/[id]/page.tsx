@@ -115,6 +115,8 @@ export default async function QuoteDetailPage({ params }: PageProps) {
           quoteToken={quote.quoteToken}
           customerName={quote.lead.customerName}
           customerEmail={quote.lead.email}
+          customerPhone={quote.lead.phone}
+          businessName={quote.business.name}
           totalFormatted={totalFormatted}
           currentStatus={quote.status}
         />

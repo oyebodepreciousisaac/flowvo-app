@@ -62,7 +62,7 @@ export async function POST(
             currency,
             reference: ref,
             subaccount: subaccountCode,
-            callbackUrl: `${origin}/invoices/${invoice.id}?paid=true`,
+            callbackUrl: `${origin}/invoices/view/${invoice.id}?paid=true`,
             metadata: {
               invoiceId: invoice.id,
               invoiceNumber: invoice.invoiceNumber,
@@ -89,8 +89,8 @@ export async function POST(
             amountInCents: invoice.total,
             currency,
             invoiceNumber: invoice.invoiceNumber,
-            successUrl: `${origin}/invoices/${invoice.id}?paid=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancelUrl: `${origin}/invoices/${invoice.id}?canceled=true`,
+            successUrl: `${origin}/invoices/view/${invoice.id}?paid=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancelUrl: `${origin}/invoices/view/${invoice.id}?canceled=true`,
             metadata: {
               invoiceId: invoice.id,
               businessId: invoice.businessId,
@@ -116,6 +116,7 @@ export async function POST(
   }
 
   const formattedTotal = formatAmount(invoice.total, currency);
+  const viewInvoiceUrl = `${origin}/invoices/view/${invoice.id}`;
 
   // Send email
   const emailRes = await sendEmail({
@@ -133,6 +134,7 @@ export async function POST(
       paymentDetails: decryptField(invoice.business.paymentDetails),
       currency,
       paymentLinkUrl,
+      viewInvoiceUrl,
     }),
     text: invoiceEmailText({
       invoiceNumber: invoice.invoiceNumber,
@@ -144,6 +146,7 @@ export async function POST(
       paymentDetails: decryptField(invoice.business.paymentDetails),
       currency,
       paymentLinkUrl,
+      viewInvoiceUrl,
     }),
   });
 

@@ -2,13 +2,16 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Send, CheckCircle2, XCircle, Copy, Check, ExternalLink, AlertCircle } from "lucide-react";
+import { Send, CheckCircle2, XCircle, Copy, Check, ExternalLink, AlertCircle, MessageCircle } from "lucide-react";
+import { buildQuoteWhatsAppUrl } from "@/lib/whatsapp";
 
 interface QuoteDetailActionsProps {
   quoteId: string;
   quoteToken: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string | null;
+  businessName?: string;
   totalFormatted: string;
   currentStatus: string;
 }
@@ -18,6 +21,8 @@ export function QuoteDetailActions({
   quoteToken,
   customerName,
   customerEmail,
+  customerPhone,
+  businessName = "Flowvo Business",
   totalFormatted,
   currentStatus,
 }: QuoteDetailActionsProps) {
@@ -129,11 +134,31 @@ export function QuoteDetailActions({
           </>
         )}
 
+        {/* 1-Click Send via WhatsApp */}
+        {customerPhone && (
+          <a
+            href={buildQuoteWhatsAppUrl({
+              customerPhone,
+              customerName,
+              businessName,
+              quoteTotalFormatted: totalFormatted,
+              quoteUrl: typeof window !== "undefined" ? `${window.location.origin}${customerUrl}` : customerUrl,
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
+            title="Send quote to customer via WhatsApp"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Send on WhatsApp</span>
+          </a>
+        )}
+
         {/* Shareable Customer Link */}
         <button
           type="button"
           onClick={handleCopyCustomerLink}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-muted)] transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-muted)] transition-colors shadow-2xs"
         >
           {copied ? (
             <>

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
-import { formatPence } from "@/lib/invoice";
+import { formatAmount } from "@/lib/currency";
 import { JobCardAction } from "./JobCardAction";
 import { Briefcase, Calendar, Phone, Mail, ArrowRight } from "lucide-react";
 
@@ -67,7 +67,7 @@ export default async function JobsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {jobs.map((job) => {
             const isComplete = job.status === "COMPLETE";
-            const formattedAmount = formatPence(job.amount);
+            const formattedAmount = formatAmount(job.amount, job.currency || "NGN");
 
             return (
               <div

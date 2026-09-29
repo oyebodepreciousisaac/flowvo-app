@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
-import { formatPence } from "@/lib/email-templates/quote-email";
+import { formatAmount } from "@/lib/currency";
 import { FileText, ArrowRight, Briefcase, Plus, ExternalLink } from "lucide-react";
 
 export const metadata: Metadata = { title: "Quotes — Flowvo" };
@@ -111,7 +111,7 @@ export default async function QuotesPage() {
                   <div className="mt-4 pt-3 border-t border-[var(--color-border)] flex items-center justify-between">
                     <span className="text-xs text-[var(--color-text-muted)]">Total:</span>
                     <span className="font-mono text-base font-bold text-[var(--color-primary)]">
-                      {formatPence(quote.total)}
+                      {formatAmount(quote.total, quote.currency)}
                     </span>
                   </div>
 

@@ -58,6 +58,8 @@ export default async function SettingsPage() {
               bankCode: business.bankCode,
               bankAccountNumber: business.bankAccountNumber,
               bankAccountName: business.bankAccountName,
+              logoUrl: business.logoUrl,
+              notificationPhone: business.notificationPhone,
             }}
           />
         </div>

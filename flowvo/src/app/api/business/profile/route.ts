@@ -21,6 +21,8 @@ const profileSchema = z.object({
   paymentDetails: z.string().max(2000).optional().nullable(),
   quoteFollowUpDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   reviewReminderDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
+  logoUrl: z.string().max(1000).optional().nullable(),
+  notificationPhone: z.string().max(50).optional().nullable(),
   googleReviewUrl: z
     .string()
     .max(500)
@@ -99,6 +101,8 @@ export async function PATCH(request: NextRequest) {
       quoteFollowUpDelayDays: result.data.quoteFollowUpDelayDays ?? 3,
       reviewReminderDelayDays: result.data.reviewReminderDelayDays ?? 4,
       googleReviewUrl: result.data.googleReviewUrl ? result.data.googleReviewUrl.trim() : null,
+      logoUrl: result.data.logoUrl !== undefined ? (result.data.logoUrl?.trim() || null) : currentBusiness?.logoUrl,
+      notificationPhone: result.data.notificationPhone !== undefined ? (result.data.notificationPhone?.trim() || null) : currentBusiness?.notificationPhone,
     },
   });
 

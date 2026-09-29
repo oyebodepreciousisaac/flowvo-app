@@ -17,6 +17,7 @@ import {
 import { LiveSyncProvider } from "@/components/live/LiveSyncProvider";
 import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -41,7 +42,6 @@ const NAV_ITEMS = [
 
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <LiveSyncProvider>
@@ -112,23 +112,38 @@ export function AppShell({ children, user }: AppShellProps) {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
           {/* Mobile Header */}
-          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-sm">
+          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20 shadow-sm">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-sm shadow-sm">
                 F
               </div>
-              <span className="font-bold text-base text-[var(--color-text)]">Flowvo</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--color-text-secondary)] font-medium truncate max-w-[120px]">
-                {user?.business?.name}
-              </span>
-              <ThemeToggle />
+              <div className="flex flex-col">
+                <span className="font-bold text-sm text-[var(--color-text)] leading-tight">Flowvo</span>
+                <span className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[110px]">
+                  {user?.business?.name || "Business"}
+                </span>
+              </div>
+            </Link>
+            <div className="flex items-center gap-1.5">
               <LiveStatusBadge />
+              <NotificationBell />
+              <ThemeToggle />
+              <Link
+                href="/settings"
+                className={`p-2 rounded-full transition-colors cursor-pointer ${
+                  pathname === "/settings"
+                    ? "bg-[var(--color-primary-subtle)] text-[var(--color-primary)]"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                }`}
+                title="Settings"
+                aria-label="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </Link>
             </div>
           </header>
 
-          {/* Desktop Top Header Bar with Live Indicator */}
+          {/* Desktop Top Header Bar with Live Indicator & Notifications */}
           <header className="hidden md:flex items-center justify-between px-8 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-10 shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -140,6 +155,7 @@ export function AppShell({ children, user }: AppShellProps) {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <ThemeToggle />
               <LiveStatusBadge />
             </div>
@@ -150,95 +166,56 @@ export function AppShell({ children, user }: AppShellProps) {
             {children}
           </main>
 
-        {/* Mobile Bottom Tab Bar (Height: 60px) */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-center justify-around px-2 z-30">
-          <Link
-            href="/dashboard"
-            className={`flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 ${
-              pathname === "/dashboard" ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)]"
-            }`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link
-            href="/leads"
-            className={`flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 ${
-              pathname === "/leads" ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)]"
-            }`}
-          >
-            <Users className="w-5 h-5" />
-            <span className="text-[10px]">Leads</span>
-          </Link>
-          <Link
-            href="/jobs"
-            className={`flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 ${
-              pathname === "/jobs" ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)]"
-            }`}
-          >
-            <Briefcase className="w-5 h-5" />
-            <span className="text-[10px]">Jobs</span>
-          </Link>
-          <Link
-            href="/invoices"
-            className={`flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 ${
-              pathname === "/invoices" ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)]"
-            }`}
-          >
-            <Receipt className="w-5 h-5" />
-            <span className="text-[10px]">Invoices</span>
-          </Link>
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="flex flex-col items-center justify-center min-w-[50px] min-h-[44px] gap-1 text-[var(--color-text-muted)]"
-          >
-            <MoreHorizontal className="w-5 h-5" />
-            <span className="text-[10px]">More</span>
-          </button>
-        </nav>
-
-        {/* Mobile "More" Drawer / Modal */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-[var(--color-overlay)]">
-            <div className="bg-[var(--color-surface)] rounded-t-[var(--radius-lg)] p-5 flex flex-col gap-4 shadow-[var(--shadow-modal)]">
-              <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-                <span className="font-semibold text-sm">More Options</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1">
-                  <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
-                </button>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/quotes"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 py-2 text-sm font-medium text-[var(--color-text)]"
-                >
-                  <FileText className="w-4 h-4 text-[var(--color-text-muted)]" />
-                  <span>Quotes</span>
-                </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 py-2 text-sm font-medium text-[var(--color-text)]"
-                >
-                  <Settings className="w-4 h-4 text-[var(--color-text-muted)]" />
-                  <span>Settings</span>
-                </Link>
-                <form action="/api/auth/logout" method="POST" className="pt-2 border-t border-[var(--color-border)]">
-                  <button
-                    type="submit"
-                    className="w-full flex items-center gap-3 py-2 text-sm font-medium text-[var(--color-error)]"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Log out</span>
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* Mobile Bottom Tab Bar (Height: 60px) - Direct 5-Stage Access */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-center justify-around px-1 z-30 shadow-lg">
+            <Link
+              href="/dashboard"
+              className={`flex flex-col items-center justify-center flex-1 py-1 gap-1 transition-colors ${
+                pathname === "/dashboard" ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span className="text-[10px]">Home</span>
+            </Link>
+            <Link
+              href="/leads"
+              className={`flex flex-col items-center justify-center flex-1 py-1 gap-1 transition-colors ${
+                pathname?.startsWith("/leads") ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span className="text-[10px]">Leads</span>
+            </Link>
+            <Link
+              href="/quotes"
+              className={`flex flex-col items-center justify-center flex-1 py-1 gap-1 transition-colors ${
+                pathname?.startsWith("/quotes") ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span className="text-[10px]">Quotes</span>
+            </Link>
+            <Link
+              href="/jobs"
+              className={`flex flex-col items-center justify-center flex-1 py-1 gap-1 transition-colors ${
+                pathname?.startsWith("/jobs") ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <Briefcase className="w-4 h-4" />
+              <span className="text-[10px]">Jobs</span>
+            </Link>
+            <Link
+              href="/invoices"
+              className={`flex flex-col items-center justify-center flex-1 py-1 gap-1 transition-colors ${
+                pathname?.startsWith("/invoices") ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <Receipt className="w-4 h-4" />
+              <span className="text-[10px]">Invoices</span>
+            </Link>
+          </nav>
+        </div>
       </div>
-    </div>
     </LiveSyncProvider>
   );
 }

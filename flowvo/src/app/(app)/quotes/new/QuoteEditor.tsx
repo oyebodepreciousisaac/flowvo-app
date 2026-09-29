@@ -27,6 +27,15 @@ interface EditableLineItem {
   lineTotalPence: number;
 }
 
+const TRADE_PRESETS = [
+  { label: "Plumbing Repair", desc: "Inspection, diagnostic & pipe leak repair", rate: "35000" },
+  { label: "Electrical Wiring", desc: "Socket installation, cabling & circuit check", rate: "25000" },
+  { label: "Solar / Inverter", desc: "Solar panel mounting, inverter setup & battery cabling", rate: "75000" },
+  { label: "AC Servicing", desc: "Air conditioner full servicing, filter cleaning & gas recharge", rate: "30000" },
+  { label: "Painting & Prep", desc: "Wall preparation, crack filling & 2-coat painting", rate: "50000" },
+  { label: "Deep Cleaning", desc: "Deep cleaning, disinfection & sanitation service", rate: "25000" },
+];
+
 function parsePence(val: string): number {
   const clean = val.replace(/[^0-9.]/g, "");
   const num = parseFloat(clean);
@@ -51,6 +60,21 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  function applyPreset(preset: typeof TRADE_PRESETS[0]) {
+    const pence = parsePence(preset.rate);
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `item-${Date.now()}-${Math.random()}`,
+        description: preset.desc,
+        quantity: 1,
+        unitPriceStr: preset.rate,
+        unitPricePence: pence,
+        lineTotalPence: pence,
+      },
+    ]);
+  }
 
   function updateItem(id: string, field: "description" | "quantity" | "unitPriceStr", value: string | number) {
     setItems((prev) =>
@@ -195,19 +219,43 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
       </div>
 
       {/* Line Items Editor */}
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
-            Line Items
-          </h2>
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
+          <div>
+            <h2 className="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              Line Items
+            </h2>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              Specify itemized descriptions, quantities, and rates.
+            </p>
+          </div>
           <button
             type="button"
             onClick={addItem}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-primary)] bg-[var(--color-primary-subtle)] hover:bg-[#d6ece7] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-primary)] bg-[var(--color-primary-subtle)] hover:bg-[#d6ece7] transition-colors self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add row</span>
           </button>
+        </div>
+
+        {/* Trade quick presets chips */}
+        <div className="space-y-1.5 p-3 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]/50 border border-[var(--color-border)]">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
+            Quick Add Trade Presets:
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {TRADE_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-primary-subtle)] hover:text-[var(--color-primary)] transition-colors cursor-pointer shadow-2xs"
+              >
+                <span>+ {preset.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -232,7 +280,7 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
               </div>
 
               {/* Quantity */}
-              <div className="w-24">
+              <div className="w-full sm:w-20">
                 <label className="block sm:hidden text-[10px] font-semibold text-[var(--color-text-muted)] uppercase mb-1">
                   Qty
                 </label>
@@ -248,20 +296,23 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
                 />
               </div>
 
-              {/* Unit price */}
-              <div className="w-32">
+              {/* Unit price with Non-Overlapping Input Group */}
+              <div className="w-full sm:w-36">
                 <label className="block sm:hidden text-[10px] font-semibold text-[var(--color-text-muted)] uppercase mb-1">
-                  Unit Price ({currencySymbol})
+                  Unit Price
                 </label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-2 text-xs text-[var(--color-text-muted)] font-mono">{currencySymbol}</span>
+                <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] focus-within:border-[var(--color-border-focus)] overflow-hidden">
+                  <span className="inline-flex items-center justify-center px-2.5 h-9 bg-[var(--color-surface-muted)] border-r border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] font-mono select-none flex-shrink-0">
+                    {currencySymbol}
+                  </span>
                   <input
                     type="text"
+                    inputMode="decimal"
                     required
                     placeholder="0.00"
                     value={item.unitPriceStr}
                     onChange={(e) => updateItem(item.id, "unitPriceStr", e.target.value)}
-                    className="w-full h-9 pl-7 pr-3 text-xs text-right font-mono rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)]"
+                    className="w-full h-9 px-2 text-xs text-right font-mono bg-transparent text-[var(--color-text)] focus:outline-none"
                   />
                 </div>
               </div>

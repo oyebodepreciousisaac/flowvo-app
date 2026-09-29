@@ -28,18 +28,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PrintableInvoicePage({ params }: PageProps) {
-  const session = await getCurrentSession();
-  if (!session) {
-    redirect("/login");
-  }
-
   const { id } = await params;
 
-  const invoice = await prisma.invoice.findFirst({
-    where: {
-      id,
-      businessId: session.user.businessId,
-    },
+  const invoice = await prisma.invoice.findUnique({
+    where: { id },
     include: {
       business: true,
       lead: true,
@@ -104,6 +96,15 @@ export default async function PrintableInvoicePage({ params }: PageProps) {
         <header className="flex flex-col sm:flex-row justify-between items-start pb-8 border-b-2 border-gray-900 gap-6">
           {/* Business Info */}
           <div>
+            {invoice.business.logoUrl && (
+              <div className="mb-3">
+                <img
+                  src={invoice.business.logoUrl}
+                  alt={invoice.business.name}
+                  className="h-12 w-auto max-w-[180px] object-contain"
+                />
+              </div>
+            )}
             <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded mb-3 tracking-wider uppercase">
               Official Tax Invoice
             </div>

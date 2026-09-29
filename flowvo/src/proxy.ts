@@ -14,6 +14,7 @@ const PUBLIC_PREFIXES = [
   "/reset-password/",
   "/enquiry/",
   "/q/",
+  "/invoices/view/",
   "/unsubscribe/",
   "/api/enquiry/",
   "/api/auth/",
@@ -32,6 +33,10 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/quotes/") &&
     (pathname.endsWith("/accept") || pathname.endsWith("/decline"))
   ) {
+    return true;
+  }
+  // Public customer invoice print/PDF view
+  if (pathname.startsWith("/invoices/") && pathname.endsWith("/print")) {
     return true;
   }
   return false;

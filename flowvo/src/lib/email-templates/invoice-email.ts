@@ -12,6 +12,7 @@ export function invoiceEmailHtml({
   paymentDetails,
   currency = "GBP",
   paymentLinkUrl,
+  viewInvoiceUrl,
 }: {
   invoiceNumber: string;
   customerName: string;
@@ -22,12 +23,14 @@ export function invoiceEmailHtml({
   paymentDetails?: string | null;
   currency?: string;
   paymentLinkUrl?: string | null;
+  viewInvoiceUrl?: string | null;
 }): string {
   const safeInvoiceNumber = escapeHtml(invoiceNumber);
   const safeBusinessName = escapeHtml(businessName);
   const firstName = escapeHtml(customerName.split(" ")[0] || "there");
   const safePaymentDetails = paymentDetails ? escapeHtml(paymentDetails) : null;
   const currencySymbol = getCurrencySymbol(currency);
+  const actionUrl = viewInvoiceUrl || paymentLinkUrl;
   const dueDateStr = new Date(dueDate).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -103,10 +106,10 @@ export function invoiceEmailHtml({
     </table>
 
     ${
-      paymentLinkUrl
+      actionUrl
         ? `<div style="text-align: center; margin: 32px 0 28px;">
-        <a href="${paymentLinkUrl}" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 15px; font-weight: 700; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-          Pay Online Now (${currencySymbol}) — Card / Transfer / USSD
+        <a href="${actionUrl}" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 15px; font-weight: 700; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          View Invoice &amp; Pay Online (${currencySymbol})
         </a>
       </div>`
         : ""
@@ -141,6 +144,7 @@ export function invoiceEmailText({
   paymentDetails,
   currency = "GBP",
   paymentLinkUrl,
+  viewInvoiceUrl,
 }: {
   invoiceNumber: string;
   customerName: string;
@@ -151,6 +155,7 @@ export function invoiceEmailText({
   paymentDetails?: string | null;
   currency?: string;
   paymentLinkUrl?: string | null;
+  viewInvoiceUrl?: string | null;
 }): string {
   const firstName = customerName.split(" ")[0] || "there";
   const dueDateStr = new Date(dueDate).toLocaleDateString("en-GB", {
@@ -166,6 +171,8 @@ export function invoiceEmailText({
     )
     .join("\n");
 
+  const actionUrl = viewInvoiceUrl || paymentLinkUrl;
+
   return `Invoice ${invoiceNumber} from ${businessName}
 
 Hi ${firstName},
@@ -176,7 +183,7 @@ ${itemsText}
 
 Total Due: ${formatAmount(totalPence, currency)}
 
-${paymentLinkUrl ? `Pay Online Securely (Card, Bank Transfer, USSD):\n${paymentLinkUrl}\n\n` : ""}${paymentDetails ? `Direct Bank Transfer Details:\n${paymentDetails}\n\n` : ""}If you have questions, reply directly to this email.
+${actionUrl ? `View & Pay Invoice Online:\n${actionUrl}\n\n` : ""}${paymentDetails ? `Direct Bank Transfer Details:\n${paymentDetails}\n\n` : ""}If you have questions, reply directly to this email.
 
 Best regards,
 ${businessName}`;

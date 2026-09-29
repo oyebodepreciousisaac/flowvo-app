@@ -59,9 +59,19 @@ export default async function PublicQuotePage({ params }: PageProps) {
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[var(--color-border)]">
             <div>
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-bold text-base mb-2">
-                {quote.business.name.slice(0, 2).toUpperCase()}
-              </div>
+              {quote.business.logoUrl ? (
+                <div className="mb-2">
+                  <img
+                    src={quote.business.logoUrl}
+                    alt={quote.business.name}
+                    className="h-10 sm:h-12 w-auto max-w-[180px] object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-bold text-base mb-2">
+                  {quote.business.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
               <h1 className="text-xl font-bold tracking-tight text-[var(--color-text)]">
                 {quote.business.name}
               </h1>
@@ -80,6 +90,16 @@ export default async function PublicQuotePage({ params }: PageProps) {
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span>{quote.business.phone}</span>
+                  </a>
+                )}
+                {(quote.business.notificationPhone || quote.business.phone) && (
+                  <a
+                    href={`https://wa.me/${(quote.business.notificationPhone || quote.business.phone || "").replace(/[^\d]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    <span>Chat on WhatsApp</span>
                   </a>
                 )}
               </div>

@@ -5,7 +5,7 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { ActivityTimeline } from "@/components/ActivityTimeline";
-import { formatPence } from "@/lib/invoice";
+import { formatAmount } from "@/lib/currency";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { JobScheduleEditor } from "./JobScheduleEditor";
 import { ArrowLeft, Clock, Phone, Mail } from "lucide-react";
@@ -61,7 +61,7 @@ export default async function JobDetailPage({ params }: PageProps) {
     lineItems = [];
   }
 
-  const amountFormatted = formatPence(job.amount);
+  const amountFormatted = formatAmount(job.amount, job.currency || "NGN");
 
   return (
     <div className="space-y-6">
@@ -172,8 +172,8 @@ export default async function JobDetailPage({ params }: PageProps) {
                       <tr key={item.id || idx}>
                         <td className="py-3 pr-2 font-medium text-[var(--color-text)]">{item.description}</td>
                         <td className="py-3 px-2 text-center text-[var(--color-text-secondary)]">{item.quantity}</td>
-                        <td className="py-3 px-2 text-right font-mono text-[var(--color-text-secondary)]">{formatPence(item.unitPricePence)}</td>
-                        <td className="py-3 pl-2 text-right font-mono font-semibold text-[var(--color-text)]">{formatPence(item.lineTotalPence)}</td>
+                        <td className="py-3 px-2 text-right font-mono text-[var(--color-text-secondary)]">{formatAmount(item.unitPricePence, job.currency || "NGN")}</td>
+                        <td className="py-3 pl-2 text-right font-mono font-semibold text-[var(--color-text)]">{formatAmount(item.lineTotalPence, job.currency || "NGN")}</td>
                       </tr>
                     ))}
                   </tbody>

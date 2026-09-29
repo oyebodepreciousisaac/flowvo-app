@@ -3,13 +3,27 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Send, CheckCircle2, AlertCircle, AlertTriangle, Printer, Copy, Check, ExternalLink } from "lucide-react";
+import {
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Printer,
+  Copy,
+  Check,
+  ExternalLink,
+  MessageCircle,
+  Eye,
+} from "lucide-react";
+import { buildInvoiceWhatsAppUrl } from "@/lib/whatsapp";
 
 interface InvoiceDetailActionsProps {
   invoiceId: string;
   invoiceNumber: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string | null;
+  businessName?: string;
   totalFormatted: string;
   currentStatus: string;
   emailDeliveryStatus: string;
@@ -22,6 +36,8 @@ export function InvoiceDetailActions({
   invoiceNumber,
   customerName,
   customerEmail,
+  customerPhone,
+  businessName = "Flowvo Business",
   totalFormatted,
   currentStatus,
   emailDeliveryStatus,
@@ -35,6 +51,28 @@ export function InvoiceDetailActions({
   const [showPaidModal, setShowPaidModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedPublicLink, setCopiedPublicLink] = useState(false);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const publicInvoiceUrl = `${origin}/invoices/view/${invoiceId}`;
+
+  const whatsappUrl = customerPhone
+    ? buildInvoiceWhatsAppUrl({
+        customerPhone,
+        customerName,
+        businessName,
+        invoiceNumber,
+        invoiceTotalFormatted: totalFormatted,
+        dueDateFormatted,
+        invoiceUrl: publicInvoiceUrl,
+      })
+    : null;
+
+  function copyPublicLink() {
+    navigator.clipboard.writeText(publicInvoiceUrl);
+    setCopiedPublicLink(true);
+    setTimeout(() => setCopiedPublicLink(false), 2500);
+  }
 
   function copyPaymentLink() {
     if (!paymentLinkUrl) return;
@@ -141,10 +179,56 @@ export function InvoiceDetailActions({
           href={`/invoices/${invoiceId}/print`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-xs"
+          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs"
         >
           <Printer className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
-          <span>Print / Save PDF</span>
+          <span>Print / PDF</span>
+        </Link>
+
+        {/* 1-Click Send on WhatsApp */}
+        {whatsappUrl && (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
+            title="Open WhatsApp with pre-filled invoice message and customer payment link"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Send on WhatsApp</span>
+          </a>
+        )}
+
+        {/* Copy Public Customer Invoice Link */}
+        <button
+          type="button"
+          onClick={copyPublicLink}
+          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors cursor-pointer shadow-2xs"
+          title="Copy customer view and payment link"
+        >
+          {copiedPublicLink ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-emerald-700 font-bold">Copied Public Link!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+              <span>Copy Customer Link</span>
+            </>
+          )}
+        </button>
+
+        {/* Customer Public View Preview */}
+        <Link
+          href={`/invoices/view/${invoiceId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs"
+          title="Preview public invoice checkout page"
+        >
+          <Eye className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
+          <span>Preview Customer View</span>
         </Link>
 
         {/* Online Payment Link Shortcuts */}
