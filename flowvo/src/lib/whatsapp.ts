@@ -44,7 +44,16 @@ export function buildQuoteWhatsAppUrl({
   const phone = cleanPhoneForWhatsApp(customerPhone);
   const firstName = customerName.split(" ")[0] || customerName;
 
-  const text = `Hi ${firstName}, here is your quote for ${quoteTotalFormatted} from *${businessName}*.\n\nYou can review the itemized breakdown and accept it online here:\n${quoteUrl}\n\nPlease let us know if you have any questions!`;
+  const text = `Hi ${firstName} 👋, *${businessName}* has sent you a quote for *${quoteTotalFormatted}*.
+
+📋 *What's inside:*
+• Itemized breakdown of all work
+• Your total: *${quoteTotalFormatted}*
+
+✅ *To accept or decline*, just tap the link below:
+${quoteUrl}
+
+You can review everything and confirm with one tap. No signup needed!`;
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
@@ -69,7 +78,14 @@ export function buildInvoiceWhatsAppUrl({
   const phone = cleanPhoneForWhatsApp(customerPhone);
   const firstName = customerName.split(" ")[0] || customerName;
 
-  const text = `Hi ${firstName}, here is invoice *${invoiceNumber}* for *${invoiceTotalFormatted}* from *${businessName}* (due by ${dueDateFormatted}).\n\nYou can view your itemized bill, pay online securely, or view our bank transfer details here:\n${invoiceUrl}\n\nThank you for your business!`;
+  const text = `Hi ${firstName} 👋, your invoice *${invoiceNumber}* for *${invoiceTotalFormatted}* from *${businessName}* is ready.
+
+📅 Payment due: *${dueDateFormatted}*
+
+💳 *To view, pay online, or get bank transfer details*, tap:
+${invoiceUrl}
+
+Thank you for your business! 🙏`;
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }

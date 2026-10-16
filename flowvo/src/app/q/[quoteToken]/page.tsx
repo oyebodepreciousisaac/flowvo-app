@@ -21,9 +21,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!quote) return { title: "Quote — Flowvo" };
 
   const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+  const formattedTotal = formatAmount(quote.total, currency);
+  const title = `Quote from ${quote.business.name} — ${formattedTotal}`;
+  const description = `${quote.business.name} has sent you a quote for ${formattedTotal}. Tap to review the full itemized breakdown and accept or decline.`;
 
   return {
-    title: `Quote from ${quote.business.name} — ${formatAmount(quote.total, currency)}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "Flowvo",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
   };
 }
 

@@ -109,7 +109,7 @@ export function invoiceEmailHtml({
       actionUrl
         ? `<div style="text-align: center; margin: 32px 0 28px;">
         <a href="${actionUrl}" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 15px; font-weight: 700; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-          View Invoice &amp; Pay Online (${currencySymbol})
+          ${viewInvoiceUrl ? `View Invoice &amp; Pay Online (${currencySymbol})` : `Pay Online Now (${currencySymbol}) — Card / Transfer / USSD`}
         </a>
       </div>`
         : ""
