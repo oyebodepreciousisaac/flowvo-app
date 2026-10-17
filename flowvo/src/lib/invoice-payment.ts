@@ -242,6 +242,7 @@ export async function generateInvoicePaymentLink({
   };
   business: {
     id: string;
+    currency?: string;
     paymentsEnabled?: boolean;
     paymentGateway?: string;
     paystackSecretKey?: string | null;
