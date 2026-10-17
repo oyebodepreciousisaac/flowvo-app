@@ -4,11 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { formatAmount } from "@/lib/currency";
-import { QuoteAcceptanceCard } from "./QuoteAcceptanceCard";
+import { getNextInvoiceNumber } from "@/lib/invoice";
+import { generateInvoicePaymentLink, processInvoicePaymentSuccess } from "@/lib/invoice-payment";
+import { QuoteAcceptanceCard, PaymentInfo } from "./QuoteAcceptanceCard";
 import { FileText, Phone, Mail, Calendar, ShieldCheck } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ quoteToken: string }>;
+  searchParams?: Promise<{ paid?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -42,14 +45,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PublicQuotePage({ params }: PageProps) {
+export default async function PublicQuotePage({ params, searchParams }: PageProps) {
   const { quoteToken } = await params;
+  const search = searchParams ? await searchParams : {};
+  const isPaidReturn = search.paid === "true";
+  const origin = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-  const quote = await prisma.quote.findUnique({
+  let quote = await prisma.quote.findUnique({
     where: { quoteToken },
     include: {
       lead: true,
       business: true,
+      jobs: true,
+      invoices: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+      activityLogs: {
+        where: { eventType: "payment.receipt_submitted" },
+        orderBy: { occurredAt: "desc" },
+        take: 1,
+      },
     },
   });
 
@@ -57,15 +73,134 @@ export default async function PublicQuotePage({ params }: PageProps) {
     notFound();
   }
 
+  const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
+  const formattedTotal = formatAmount(quote.total, currency);
+
+  let invoice = quote.invoices[0];
+
+  // If returning from online payment gateway, mark invoice paid idempotently
+  if (isPaidReturn && invoice && invoice.status !== "PAID") {
+    try {
+      await processInvoicePaymentSuccess({
+        invoiceId: invoice.id,
+        origin,
+      });
+      // Refresh invoice record
+      const refreshedInvoice = await prisma.invoice.findUnique({
+        where: { id: invoice.id },
+      });
+      if (refreshedInvoice) {
+        invoice = refreshedInvoice;
+      }
+    } catch (err) {
+      console.error("Error processing payment return:", err);
+    }
+  }
+
+  // If quote is already accepted but has no invoice, auto-create it
+  if (quote.status === "ACCEPTED" && !invoice) {
+    try {
+      const invoiceNumber = await getNextInvoiceNumber(quote.businessId);
+      const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      invoice = await prisma.invoice.create({
+        data: {
+          quoteId: quote.id,
+          jobId: quote.jobs[0]?.id || null,
+          leadId: quote.leadId,
+          businessId: quote.businessId,
+          customerName: quote.lead.customerName,
+          customerEmail: quote.lead.email,
+          invoiceNumber,
+          lineItems: quote.lineItems,
+          subtotal: quote.total,
+          total: quote.total,
+          currency,
+          status: "SENT",
+          dueDate,
+        },
+      });
+    } catch (err) {
+      console.error("Error creating invoice for accepted quote:", err);
+    }
+  }
+
+  // Ensure paymentLinkUrl exists if accepted
+  if (quote.status === "ACCEPTED" && invoice && !invoice.paymentLinkUrl) {
+    try {
+      const linkRes = await generateInvoicePaymentLink({
+        invoice,
+        business: quote.business,
+        origin,
+        callbackPath: `/q/${quote.quoteToken}?paid=true`,
+      });
+      if (linkRes.paymentLinkUrl) {
+        invoice.paymentLinkUrl = linkRes.paymentLinkUrl;
+        invoice.paymentReference = linkRes.paymentReference;
+      }
+    } catch (err) {
+      console.error("Error generating payment link for quote:", err);
+    }
+  }
+
+  // Parse bank details
+  let effectiveBankName = quote.business.bankName || "Official Settlement Bank";
+  let effectiveAccountNumber = quote.business.bankAccountNumber || "";
+  let effectiveAccountName = quote.business.bankAccountName || quote.business.name;
+  let effectiveNotes = "";
+
+  if (quote.business.paymentDetails && quote.business.paymentDetails.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(quote.business.paymentDetails);
+      effectiveBankName = parsed.bankName || effectiveBankName;
+      effectiveAccountNumber = parsed.accountNumber || effectiveAccountNumber;
+      effectiveAccountName = parsed.accountName || effectiveAccountName;
+      effectiveNotes = parsed.notes || "";
+    } catch {
+      // ignore
+    }
+  } else if (quote.business.paymentDetails) {
+    effectiveNotes = quote.business.paymentDetails;
+  }
+
+  // Parse submitted receipt proof if any
+  const receiptLog = quote.activityLogs[0];
+  let receiptDetails = null;
+  if (receiptLog?.detail && receiptLog.detail.startsWith("{")) {
+    try {
+      receiptDetails = JSON.parse(receiptLog.detail);
+    } catch {
+      // ignore
+    }
+  }
+
+  const initialPaymentInfo: PaymentInfo = {
+    invoiceId: invoice?.id || null,
+    invoiceNumber: invoice?.invoiceNumber || null,
+    invoiceStatus: invoice?.status || "SENT",
+    paidAtFormatted: invoice?.paidAt
+      ? new Date(invoice.paidAt).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : null,
+    paymentLinkUrl: invoice?.paymentLinkUrl || null,
+    paymentReference: invoice?.paymentReference || null,
+    bankName: effectiveBankName,
+    bankAccountNumber: effectiveAccountNumber,
+    bankAccountName: effectiveAccountName,
+    paymentNotes: effectiveNotes,
+    businessPhone: quote.business.notificationPhone || quote.business.phone || null,
+    receiptSubmitted: Boolean(receiptLog),
+    receiptDetails,
+  };
+
   let lineItems: LineItem[] = [];
   try {
     lineItems = JSON.parse(quote.lineItems);
   } catch {
     lineItems = [];
   }
-
-  const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
-  const formattedTotal = formatAmount(quote.total, currency);
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] py-12 px-4 sm:px-6 lg:px-8">
@@ -207,8 +342,10 @@ export default async function PublicQuotePage({ params }: PageProps) {
               initialStatus={quote.status}
               businessName={quote.business.name}
               totalFormatted={formattedTotal}
+              currency={currency}
               acceptedAt={quote.acceptedAt?.toISOString()}
               declinedAt={quote.declinedAt?.toISOString()}
+              initialPaymentInfo={initialPaymentInfo}
             />
           </div>
         </div>

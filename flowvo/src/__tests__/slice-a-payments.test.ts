@@ -4,7 +4,8 @@ import { formatAmount, getCurrencySymbol, SUPPORTED_CURRENCIES } from "@/lib/cur
 import { verifyPaystackWebhookSignature } from "@/lib/paystack";
 import { verifyStripeWebhookSignature } from "@/lib/stripe";
 import { invoiceEmailHtml, invoiceEmailText } from "@/lib/email-templates/invoice-email";
-import { processInvoicePaymentSuccess } from "@/lib/invoice-payment";
+import { processInvoicePaymentSuccess, generateInvoicePaymentLink } from "@/lib/invoice-payment";
+import * as paystackLib from "@/lib/paystack";
 import { prisma } from "@/lib/prisma";
 
 describe("Slice A: Multi-Currency Engine", () => {
@@ -223,4 +224,97 @@ describe("Slice A: Idempotent Payment Success Processing", () => {
     expect(secondResult.ok).toBe(true);
     expect(secondResult.alreadyPaid).toBe(true);
   });
+
+  describe("Invoice Payment Link Generation (Paystack & Offline)", () => {
+    it("returns existing paymentLinkUrl without calling gateway if already present", async () => {
+      const res = await generateInvoicePaymentLink({
+        invoice: {
+          id: "inv-existing",
+          invoiceNumber: "INV-100",
+          customerEmail: "customer@example.com",
+          currency: "NGN",
+          total: 5000000,
+          paymentLinkUrl: "https://checkout.paystack.com/already-created",
+          paymentReference: "FLOWVO_REF_EXISTING",
+        },
+        business: {
+          id: "biz-1",
+          currency: "NGN",
+          paymentGateway: "PAYSTACK",
+        },
+        origin: "http://localhost:3000",
+      });
+
+      expect(res.paymentLinkUrl).toBe("https://checkout.paystack.com/already-created");
+      expect(res.paymentReference).toBe("FLOWVO_REF_EXISTING");
+    });
+
+    it("initializes Paystack transaction in kobo for Nigerian Naira invoices", async () => {
+      vi.spyOn(paystackLib, "getEffectivePaystackSecretKey").mockReturnValueOnce("sk_test_mocked_key");
+      vi.spyOn(paystackLib, "initializePaystackTransaction").mockResolvedValueOnce({
+        status: true,
+        message: "Authorization URL created",
+        data: {
+          authorization_url: "https://checkout.paystack.com/new-session-123",
+          access_code: "acc_code_123",
+          reference: "FLOWVO_inv-new_123",
+        },
+      });
+
+      const updateSpy = vi.spyOn(prisma.invoice, "update").mockResolvedValueOnce({} as any);
+
+      const res = await generateInvoicePaymentLink({
+        invoice: {
+          id: "inv-new",
+          invoiceNumber: "INV-101",
+          customerEmail: "chidi@example.com",
+          currency: "NGN",
+          total: 35000000, // 350,000 NGN in kobo
+          paymentLinkUrl: null,
+          paymentReference: null,
+        },
+        business: {
+          id: "biz-ng",
+          currency: "NGN",
+          paymentGateway: "PAYSTACK",
+        },
+        origin: "http://localhost:3000",
+        callbackPath: "/q/quote-token-abc?paid=true",
+      });
+
+      expect(res.paymentLinkUrl).toBe("https://checkout.paystack.com/new-session-123");
+      expect(updateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "inv-new" },
+          data: expect.objectContaining({
+            paymentLinkUrl: "https://checkout.paystack.com/new-session-123",
+          }),
+        })
+      );
+    });
+
+    it("properly structures offline bank transfer receipt metadata", () => {
+      const receiptMeta = {
+        senderName: "Bolanle Cole",
+        bankName: "Guaranty Trust Bank (GTBank)",
+        reference: "TRANSFER-REF-992",
+        note: "Paid for solar installation package",
+        receiptDataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        amount: 25000000,
+        currency: "NGN",
+        submittedAt: new Date().toISOString(),
+      };
+
+      const serialized = JSON.stringify(receiptMeta);
+      const parsed = JSON.parse(serialized);
+
+      expect(parsed.senderName).toBe("Bolanle Cole");
+      expect(parsed.bankName).toContain("GTBank");
+      expect(parsed.currency).toBe("NGN");
+      expect(parsed.amount).toBe(25000000);
+      expect(parsed.receiptDataUrl).toContain("data:image/png;base64");
+      expect(formatAmount(parsed.amount, parsed.currency)).toContain("250,000.00");
+    });
+  });
 });
+

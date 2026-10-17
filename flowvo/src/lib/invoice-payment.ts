@@ -4,6 +4,9 @@ import { sendEmail } from "@/lib/email";
 import { isValidGoogleReviewUrl } from "@/lib/review";
 import { reviewRequestHtml, reviewRequestText } from "@/lib/email-templates/review-request";
 import { formatAmount } from "@/lib/currency";
+import { getEffectivePaystackSecretKey, initializePaystackTransaction } from "@/lib/paystack";
+import { getEffectiveStripeSecretKey, createStripeCheckoutSession } from "@/lib/stripe";
+import { decryptField } from "@/lib/security";
 
 export async function processInvoicePaymentSuccess({
   invoiceId,
@@ -220,3 +223,130 @@ export async function processInvoicePaymentSuccess({
 
   return { ok: true, invoice: updatedInvoice };
 }
+
+export async function generateInvoicePaymentLink({
+  invoice,
+  business,
+  origin,
+  callbackPath,
+}: {
+  invoice: {
+    id: string;
+    invoiceNumber: string;
+    customerEmail: string;
+    total: number;
+    currency: string;
+    paymentLinkUrl?: string | null;
+    paymentReference?: string | null;
+    quoteId?: string | null;
+  };
+  business: {
+    id: string;
+    paymentsEnabled?: boolean;
+    paymentGateway?: string;
+    paystackSecretKey?: string | null;
+    paystackSubaccountCode?: string | null;
+    stripeSecretKey?: string | null;
+  };
+  origin: string;
+  callbackPath?: string;
+}): Promise<{ paymentLinkUrl: string | null; paymentReference: string | null }> {
+  // If payment link is already generated, return it
+  if (invoice.paymentLinkUrl) {
+    return {
+      paymentLinkUrl: invoice.paymentLinkUrl,
+      paymentReference: invoice.paymentReference || null,
+    };
+  }
+
+  const currency = (invoice.currency || "NGN").toUpperCase();
+  const gateway =
+    business.paymentGateway ||
+    (["NGN", "GHS", "ZAR", "KES"].includes(currency) ? "PAYSTACK" : "STRIPE");
+
+  let paymentLinkUrl: string | null = null;
+  let paymentReference = invoice.paymentReference || null;
+  let gatewayPaymentId: string | null = null;
+
+  if (gateway === "PAYSTACK" || (!business.paymentGateway && currency === "NGN")) {
+    const customPaystackKey = business.paystackSecretKey
+      ? decryptField(business.paystackSecretKey)
+      : null;
+    const paystackKey = getEffectivePaystackSecretKey(customPaystackKey);
+    if (paystackKey) {
+      try {
+        const ref = paymentReference || `FLOWVO_${invoice.id}_${Date.now()}`;
+        const subaccountCode = business.paystackSubaccountCode || undefined;
+        const initRes = await initializePaystackTransaction({
+          secretKey: paystackKey,
+          email: invoice.customerEmail,
+          amountInKobo: invoice.total,
+          currency,
+          reference: ref,
+          subaccount: subaccountCode,
+          callbackUrl: `${origin}${callbackPath || `/invoices/view/${invoice.id}?paid=true`}`,
+          metadata: {
+            invoiceId: invoice.id,
+            invoiceNumber: invoice.invoiceNumber,
+            businessId: business.id,
+            subaccount: subaccountCode,
+          },
+        });
+
+        if (initRes.status && initRes.data?.authorization_url) {
+          paymentLinkUrl = initRes.data.authorization_url;
+          paymentReference = ref;
+        }
+      } catch (err) {
+        console.error("Failed to generate Paystack payment link:", err);
+      }
+    }
+  } else if (gateway === "STRIPE") {
+    const customStripeKey = business.stripeSecretKey
+      ? decryptField(business.stripeSecretKey)
+      : null;
+    const stripeKey = getEffectiveStripeSecretKey(customStripeKey);
+    if (stripeKey) {
+      try {
+        const sessionRes = await createStripeCheckoutSession({
+          secretKey: stripeKey,
+          customerEmail: invoice.customerEmail,
+          amountInCents: invoice.total,
+          currency,
+          invoiceNumber: invoice.invoiceNumber,
+          successUrl: `${origin}${callbackPath || `/invoices/view/${invoice.id}?paid=true`}&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${origin}${callbackPath || `/invoices/view/${invoice.id}?canceled=true`}`,
+          metadata: {
+            invoiceId: invoice.id,
+            businessId: business.id,
+          },
+        });
+
+        if (sessionRes.url) {
+          paymentLinkUrl = sessionRes.url;
+          gatewayPaymentId = sessionRes.id || null;
+        }
+      } catch (err) {
+        console.error("Failed to generate Stripe payment link:", err);
+      }
+    }
+  }
+
+  if (paymentLinkUrl) {
+    try {
+      await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          paymentLinkUrl,
+          ...(paymentReference ? { paymentReference } : {}),
+          ...(gatewayPaymentId ? { gatewayPaymentId } : {}),
+        },
+      });
+    } catch (err) {
+      console.error("Failed to save payment link on invoice:", err);
+    }
+  }
+
+  return { paymentLinkUrl, paymentReference };
+}
+

@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/email";
 import { isValidGoogleReviewUrl } from "@/lib/review";
 import { reviewRequestHtml, reviewRequestText } from "@/lib/email-templates/review-request";
 import { isSameOrigin } from "@/lib/security";
+import { formatAmount } from "@/lib/currency";
 
 export async function POST(
   request: NextRequest,
@@ -60,7 +61,7 @@ export async function POST(
       entityId: invoice.id,
       eventType: "invoice.paid",
       status: "SUCCESS",
-      detail: `Invoice ${invoice.invoiceNumber} marked as paid (£${(invoice.total / 100).toFixed(2)})`,
+      detail: `Invoice ${invoice.invoiceNumber} marked as paid (${formatAmount(invoice.total, invoice.currency)})`,
     },
   });
 

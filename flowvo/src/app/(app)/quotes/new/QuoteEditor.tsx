@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, AlertCircle } from "lucide-react";
-import { formatAmount, getCurrencySymbol } from "@/lib/currency";
+import { Plus, Trash2, AlertCircle, Coins, Check } from "lucide-react";
+import { formatAmount, getCurrencySymbol, SUPPORTED_CURRENCIES } from "@/lib/currency";
 
 interface LeadData {
   id: string;
@@ -45,7 +45,8 @@ function parsePence(val: string): number {
 
 export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
   const router = useRouter();
-  const currencySymbol = getCurrencySymbol(currency);
+  const [selectedCurrency, setSelectedCurrency] = useState(currency || "NGN");
+  const currencySymbol = getCurrencySymbol(selectedCurrency);
 
   const [items, setItems] = useState<EditableLineItem[]>([
     {
@@ -159,7 +160,7 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId: lead.id,
-          currency,
+          currency: selectedCurrency,
           lineItems: items.map((it) => ({
             id: it.id,
             description: it.description,
@@ -215,6 +216,44 @@ export function QuoteEditor({ lead, currency = "NGN" }: QuoteEditorProps) {
             <span className="block text-[var(--color-text-muted)] mb-0.5">Requested Service</span>
             <span className="font-medium text-[var(--color-text)]">{lead.serviceType}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Currency Selection Bar */}
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-subtle)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
+            <Coins className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[var(--color-text)] flex items-center gap-2">
+              <span>Quote Currency</span>
+              <span className="px-2 py-0.5 rounded-full bg-[var(--color-primary-subtle)] text-[var(--color-primary)] font-mono text-[11px] font-semibold">
+                {SUPPORTED_CURRENCIES[selectedCurrency]?.flag} {selectedCurrency} ({currencySymbol})
+              </span>
+            </div>
+            <p className="text-[11px] text-[var(--color-text-muted)]">
+              All line item rates and customer invoice will settle in this currency.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="quote-currency-select" className="text-xs font-medium text-[var(--color-text-secondary)] whitespace-nowrap">
+            Change Currency:
+          </label>
+          <select
+            id="quote-currency-select"
+            value={selectedCurrency}
+            onChange={(e) => setSelectedCurrency(e.target.value)}
+            className="px-3 py-1.5 text-xs font-semibold bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[var(--color-text)] shadow-xs focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer"
+          >
+            {Object.values(SUPPORTED_CURRENCIES).map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.code} ({c.symbol}) — {c.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

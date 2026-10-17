@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Send, CheckCircle2, XCircle, Copy, Check, ExternalLink, AlertCircle, MessageCircle, ClipboardCheck } from "lucide-react";
+import Link from "next/link";
+import { Send, CheckCircle2, XCircle, Copy, Check, ExternalLink, AlertCircle, MessageCircle, ClipboardCheck, DollarSign, Loader2 } from "lucide-react";
 import { buildQuoteWhatsAppUrl } from "@/lib/whatsapp";
 
 interface QuoteDetailActionsProps {
@@ -14,6 +15,9 @@ interface QuoteDetailActionsProps {
   businessName?: string;
   totalFormatted: string;
   currentStatus: string;
+  invoiceId?: string | null;
+  invoiceNumber?: string | null;
+  invoiceStatus?: string | null;
 }
 
 export function QuoteDetailActions({
@@ -25,11 +29,15 @@ export function QuoteDetailActions({
   businessName = "Flowvo Business",
   totalFormatted,
   currentStatus,
+  invoiceId,
+  invoiceNumber,
+  invoiceStatus,
 }: QuoteDetailActionsProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [showConfirmPaidModal, setShowConfirmPaidModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
@@ -40,6 +48,31 @@ export function QuoteDetailActions({
 
   const customerUrl = `/q/${quoteToken}`;
   const fullCustomerUrl = origin ? `${origin}${customerUrl}` : customerUrl;
+
+  async function handleConfirmPaid() {
+    if (!invoiceId) {
+      setErrorMsg("No linked invoice found to mark as paid.");
+      return;
+    }
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch(`/api/invoices/${invoiceId}/paid`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorMsg(data.error || "Failed to confirm payment.");
+        return;
+      }
+      setShowConfirmPaidModal(false);
+      router.refresh();
+    } catch {
+      setErrorMsg("A network error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSendQuote() {
     setLoading(true);
@@ -137,6 +170,37 @@ export function QuoteDetailActions({
           </>
         )}
 
+        {currentStatus === "ACCEPTED" && (
+          <div className="flex flex-wrap items-center gap-2">
+            {invoiceStatus === "PAID" ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Payment Confirmed &amp; Settled</span>
+              </span>
+            ) : invoiceId ? (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => setShowConfirmPaidModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer disabled:opacity-60"
+                title="Confirm that bank transfer payment has entered your bank account"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Confirm Payment Received (Bank Transfer)</span>
+              </button>
+            ) : null}
+
+            {invoiceId && (
+              <Link
+                href={`/invoices/${invoiceId}`}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-muted)] transition-colors shadow-2xs"
+              >
+                <span>View Invoice ({invoiceNumber || "INV"})</span>
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* 1-Click Send via WhatsApp */}
         {customerPhone && origin && (
           <a
@@ -228,6 +292,62 @@ export function QuoteDetailActions({
                 className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-md)] bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white transition-colors disabled:opacity-60 shadow-sm"
               >
                 {loading ? "Sending quote..." : "Send quote"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Payment Received Modal */}
+      {showConfirmPaidModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-overlay)]">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-modal)] max-w-md w-full p-6 space-y-4 animate-in fade-in duration-150">
+            <div className="flex items-center gap-2.5 text-emerald-600">
+              <CheckCircle2 className="w-5 h-5" />
+              <h3 className="text-base font-bold text-[var(--color-text)]">
+                Confirm Payment Received?
+              </h3>
+            </div>
+
+            <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+              Are you sure you want to confirm that payment for{" "}
+              <strong className="text-[var(--color-text)]">{totalFormatted}</strong> has been received from{" "}
+              <strong className="text-[var(--color-text)]">{customerName}</strong> into your bank account?
+            </p>
+
+            <div className="bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] p-3 text-xs text-[var(--color-text-secondary)] space-y-1">
+              <div>Invoice: <strong className="font-semibold text-[var(--color-text)]">{invoiceNumber || "Auto-linked Invoice"}</strong></div>
+              <div>Amount: <strong className="font-semibold text-[var(--color-text)]">{totalFormatted}</strong></div>
+              <div>Customer: <span className="font-medium">{customerName} ({customerEmail})</span></div>
+            </div>
+
+            <p className="text-[11px] text-[var(--color-text-muted)]">
+              This will update the invoice to <strong>PAID</strong>, log an official activity entry, and automatically send your review request if configured.
+            </p>
+
+            <div className="pt-3 border-t border-[var(--color-border)] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => setShowConfirmPaidModal(false)}
+                className="px-4 py-2 text-xs font-medium rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleConfirmPaid}
+                className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-md)] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white transition-colors disabled:opacity-60 shadow-sm cursor-pointer"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Confirming...
+                  </span>
+                ) : (
+                  "Yes, Confirm Payment Received"
+                )}
               </button>
             </div>
           </div>

@@ -68,6 +68,10 @@ export async function POST(request: NextRequest) {
           name: businessName,
           slug,
           email: email.toLowerCase(),
+          country: "NG",
+          currency: "NGN",
+          paymentGateway: "PAYSTACK",
+          paymentsEnabled: true,
         },
       });
 

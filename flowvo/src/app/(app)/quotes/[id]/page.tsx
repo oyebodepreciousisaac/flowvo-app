@@ -8,7 +8,7 @@ import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { formatAmount, getCurrencySymbol } from "@/lib/currency";
 import { QuoteDetailActions } from "./QuoteDetailActions";
-import { ArrowLeft, Clock, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Clock, Mail, Phone, Receipt, ExternalLink } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,6 +45,10 @@ export default async function QuoteDetailPage({ params }: PageProps) {
     include: {
       lead: true,
       business: true,
+      invoices: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
       activityLogs: {
         orderBy: { occurredAt: "desc" },
       },
@@ -65,6 +69,28 @@ export default async function QuoteDetailPage({ params }: PageProps) {
   const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
   const currencySymbol = getCurrencySymbol(currency);
   const totalFormatted = formatAmount(quote.total, currency);
+
+  const invoice = quote.invoices[0];
+
+  const receiptLog = quote.activityLogs.find(
+    (log) => log.eventType === "payment.receipt_submitted"
+  );
+  let receiptData: {
+    senderName?: string;
+    bankName?: string;
+    reference?: string;
+    note?: string;
+    receiptDataUrl?: string | null;
+    submittedAt?: string;
+  } | null = null;
+
+  if (receiptLog?.detail && receiptLog.detail.startsWith("{")) {
+    try {
+      receiptData = JSON.parse(receiptLog.detail);
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -119,8 +145,80 @@ export default async function QuoteDetailPage({ params }: PageProps) {
           businessName={quote.business.name}
           totalFormatted={totalFormatted}
           currentStatus={quote.status}
+          invoiceId={invoice?.id}
+          invoiceNumber={invoice?.invoiceNumber}
+          invoiceStatus={invoice?.status}
         />
       </div>
+
+      {/* Offline Bank Transfer Receipt Banner (if submitted) */}
+      {receiptData && (
+        <div
+          className={`p-5 rounded-[var(--radius-lg)] border transition-all ${
+            invoice?.status === "PAID"
+              ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"
+              : "bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800"
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div
+                className={`p-2.5 rounded-xl ${
+                  invoice?.status === "PAID"
+                    ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
+                    : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300"
+                }`}
+              >
+                <Receipt className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-[var(--color-text)]">
+                    {invoice?.status === "PAID"
+                      ? "Bank Transfer Payment Confirmed"
+                      : "Customer Submitted Bank Transfer Receipt"}
+                  </h3>
+                  <span
+                    className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${
+                      invoice?.status === "PAID"
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
+                    }`}
+                  >
+                    {invoice?.status === "PAID" ? "Settled" : "Verification Pending"}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--color-text-secondary)]">
+                  {receiptData.senderName} reported a direct transfer via{" "}
+                  <strong className="text-[var(--color-text)]">{receiptData.bankName}</strong>{" "}
+                  (Ref: <code className="font-mono bg-[var(--color-surface-muted)] px-1 py-0.5 rounded">{receiptData.reference}</code>)
+                  {receiptData.submittedAt && ` on ${new Date(receiptData.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}.
+                </p>
+                {receiptData.note && (
+                  <p className="text-xs italic text-[var(--color-text-muted)] mt-1">
+                    &ldquo;{receiptData.note}&rdquo;
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {receiptData.receiptDataUrl && (
+              <div className="flex items-center gap-2 sm:self-center">
+                <a
+                  href={receiptData.receiptDataUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={`receipt-${receiptData.reference || "proof"}.png`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)] transition-colors shadow-2xs"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>View Uploaded Proof</span>
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Two Column Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
