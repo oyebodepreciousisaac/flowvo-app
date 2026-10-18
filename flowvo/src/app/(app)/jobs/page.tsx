@@ -93,7 +93,7 @@ export default async function JobsPage() {
 
                   {/* Customer Name & Link */}
                   <Link href={`/jobs/${job.id}`} className="group block">
-                    <h3 className="text-base font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                    <h3 className="text-base font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">
                       {job.customerName}
                     </h3>
                   </Link>
@@ -112,19 +112,19 @@ export default async function JobsPage() {
                   </div>
 
                   {/* Contact details */}
-                  <div className="mt-3 pt-2 border-t border-[var(--color-border)] flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+                  <div className="mt-3 pt-2 border-t border-[var(--color-border)] flex items-center justify-between gap-2 text-[11px] sm:text-xs text-[var(--color-text-secondary)] flex-wrap">
                     <a
                       href={`tel:${job.customerPhone}`}
-                      className="inline-flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors"
+                      className="inline-flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors shrink-0"
                     >
                       <Phone className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                       <span>{job.customerPhone}</span>
                     </a>
                     <a
                       href={`mailto:${job.customerEmail}`}
-                      className="inline-flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors truncate max-w-[140px]"
+                      className="inline-flex items-center gap-1 hover:text-[var(--color-primary)] transition-colors truncate max-w-[150px] xs:max-w-[200px]"
                     >
-                      <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+                      <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
                       <span className="truncate">{job.customerEmail}</span>
                     </a>
                   </div>

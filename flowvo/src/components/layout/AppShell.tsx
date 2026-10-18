@@ -27,6 +27,7 @@ interface AppShellProps {
     business?: {
       name: string;
       slug: string;
+      logoUrl?: string | null;
     } | null;
   } | null;
 }
@@ -51,10 +52,20 @@ export function AppShell({ children, user }: AppShellProps) {
           <div className="flex flex-col gap-6">
             {/* Brand header */}
             <div className="flex items-center gap-2.5 px-2 py-1">
-              <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                F
-              </div>
-              <div className="flex flex-col">
+              {user?.business?.logoUrl ? (
+                <div className="w-8 h-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-muted)] flex items-center justify-center overflow-hidden shrink-0 p-0.5 shadow-2xs">
+                  <img
+                    src={user.business.logoUrl}
+                    alt={user.business.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
+                  F
+                </div>
+              )}
+              <div className="flex flex-col min-w-0">
                 <span className="font-bold text-lg leading-tight tracking-tight text-[var(--color-text)]">
                   Flowvo
                 </span>
@@ -112,19 +123,29 @@ export function AppShell({ children, user }: AppShellProps) {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
           {/* Mobile Header */}
-          <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20 shadow-sm">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                F
-              </div>
-              <div className="flex flex-col">
+          <header className="md:hidden flex items-center justify-between px-3 py-2.5 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-20 shadow-sm">
+            <Link href="/dashboard" className="flex items-center gap-2 min-w-0 pr-2">
+              {user?.business?.logoUrl ? (
+                <div className="w-7 h-7 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-muted)] flex items-center justify-center overflow-hidden shrink-0 p-0.5 shadow-2xs">
+                  <img
+                    src={user.business.logoUrl}
+                    alt={user.business.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                  F
+                </div>
+              )}
+              <div className="flex flex-col min-w-0">
                 <span className="font-bold text-sm text-[var(--color-text)] leading-tight">Flowvo</span>
-                <span className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[110px]">
+                <span className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[90px] xs:max-w-[120px]">
                   {user?.business?.name || "Business"}
                 </span>
               </div>
             </Link>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 shrink-0">
               <LiveStatusBadge />
               <NotificationBell />
               <ThemeToggle />

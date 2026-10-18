@@ -189,25 +189,25 @@ export default async function DashboardPage() {
             Real-time lead-to-cash workflow status and required actions.
           </p>
         </div>
-        <div className="self-start sm:self-auto">
+        <div className="hidden sm:block">
           <LiveStatusBadge />
         </div>
       </div>
 
       {/* Summary KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Link
           href="/leads"
-          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all"
+          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-3.5 sm:p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all min-w-0"
         >
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-            <span>Active Leads</span>
-            <Users className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
+          <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1 gap-1">
+            <span className="truncate">Active Leads</span>
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors shrink-0" />
           </div>
-          <div className="font-mono text-2xl font-bold text-[var(--color-text)]">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {activeLeadsCount}
           </div>
-          <span className="text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
+          <span className="text-[10px] sm:text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
             <span>View leads</span>
             <ArrowRight className="w-3 h-3" />
           </span>
@@ -215,16 +215,16 @@ export default async function DashboardPage() {
 
         <Link
           href="/quotes"
-          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all"
+          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-3.5 sm:p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all min-w-0"
         >
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-            <span>Open Quotes</span>
-            <FileText className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
+          <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1 gap-1">
+            <span className="truncate">Open Quotes</span>
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors shrink-0" />
           </div>
-          <div className="font-mono text-2xl font-bold text-[var(--color-text)]">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {openQuotesCount}
           </div>
-          <span className="text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
+          <span className="text-[10px] sm:text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
             <span>View quotes</span>
             <ArrowRight className="w-3 h-3" />
           </span>
@@ -232,16 +232,16 @@ export default async function DashboardPage() {
 
         <Link
           href="/jobs"
-          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all"
+          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-3.5 sm:p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all min-w-0"
         >
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-            <span>Jobs in Progress</span>
-            <Briefcase className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
+          <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1 gap-1">
+            <span className="truncate">In Progress</span>
+            <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors shrink-0" />
           </div>
-          <div className="font-mono text-2xl font-bold text-[var(--color-text)]">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {jobsInProgressCount}
           </div>
-          <span className="text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
+          <span className="text-[10px] sm:text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
             <span>View jobs</span>
             <ArrowRight className="w-3 h-3" />
           </span>
@@ -249,16 +249,16 @@ export default async function DashboardPage() {
 
         <Link
           href="/invoices"
-          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all"
+          className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-3.5 sm:p-4 shadow-[var(--shadow-card)] hover:border-[var(--color-border-focus)] transition-all min-w-0"
         >
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">
-            <span>Unpaid Invoices</span>
-            <Clock className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
+          <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-1 gap-1">
+            <span className="truncate">Unpaid</span>
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors shrink-0" />
           </div>
-          <div className="font-mono text-2xl font-bold text-[var(--color-text)]">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {unpaidInvoicesCount}
           </div>
-          <span className="text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
+          <span className="text-[10px] sm:text-[11px] text-[var(--color-primary)] font-medium group-hover:underline inline-flex items-center gap-1 mt-1">
             <span>View invoices</span>
             <ArrowRight className="w-3 h-3" />
           </span>

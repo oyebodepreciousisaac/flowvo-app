@@ -238,33 +238,33 @@ export default async function InvoicesPage() {
               >
                 {/* Left: Invoice Number, Customer, Due Date */}
                 <div className="space-y-1.5 min-w-0">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-mono text-xs font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-muted)] px-2 py-0.5 rounded border border-[var(--color-border)]">
+                  <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                    <span className="font-mono text-[11px] sm:text-xs font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-muted)] px-1.5 sm:px-2 py-0.5 rounded border border-[var(--color-border)] shrink-0">
                       {invoice.invoiceNumber}
                     </span>
                     <Link
                       href={`/invoices/${invoice.id}`}
-                      className="text-base font-bold text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors truncate"
+                      className="text-sm sm:text-base font-bold text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors truncate max-w-[150px] xs:max-w-[220px] sm:max-w-none"
                     >
                       {invoice.customerName}
                     </Link>
                     <StatusChip status={invoice.status} />
                     {isSent && invoice.emailDeliveryStatus === "BOUNCED" && (
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-status-overdue)] text-[var(--color-error)] border border-[#f8b4b4]">
+                      <span className="text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-[var(--color-status-overdue)] text-[var(--color-error)] border border-[#f8b4b4] shrink-0">
                         Bounced
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)] flex-wrap">
-                    <span className="break-all">{invoice.customerEmail}</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+                  <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs text-[var(--color-text-secondary)] flex-wrap">
+                    <span className="truncate max-w-[170px] xs:max-w-[240px] sm:max-w-none">{invoice.customerEmail}</span>
+                    <span className="flex items-center gap-1 shrink-0">
+                      <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--color-text-muted)] shrink-0" />
                       <span className={isOverdue ? "text-[var(--color-error)] font-medium" : ""}>
                         Due: {dueDateStr}
                       </span>
                     </span>
                     {invoice.paidAt && (
-                      <span className="text-[var(--color-primary)] font-medium">
+                      <span className="text-[var(--color-primary)] font-medium shrink-0">
                         Paid: {new Date(invoice.paidAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                       </span>
                     )}
@@ -272,38 +272,38 @@ export default async function InvoicesPage() {
                 </div>
 
                 {/* Right: Amount & Action Link */}
-                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)] shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-4 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)] shrink-0">
                   <div className="text-left sm:text-right">
-                    <span className="font-mono text-lg font-bold text-[var(--color-text)] block">
+                    <span className="font-mono text-base sm:text-lg font-bold text-[var(--color-text)] block">
                       {formatAmount(invoice.total, invoice.currency || businessCurrency)}
                     </span>
                     {invoice.currency && invoice.currency.toUpperCase() !== businessCurrency.toUpperCase() && (
-                      <span className="text-[11px] text-[var(--color-primary)] font-mono font-semibold block">
+                      <span className="text-[10px] sm:text-[11px] text-[var(--color-primary)] font-mono font-semibold block">
                         ≈ {formatAmount(convertCurrency(invoice.total, invoice.currency, businessCurrency), businessCurrency)}
                       </span>
                     )}
-                    <span className="text-[11px] text-[var(--color-text-muted)] block">
-                      {isDraft ? "Draft — not sent" : isSent ? "Awaiting payment" : isOverdue ? "Payment past due" : "Received"}
+                    <span className="text-[10px] sm:text-[11px] text-[var(--color-text-muted)] block">
+                      {isDraft ? "Draft" : isSent ? "Awaiting payment" : isOverdue ? "Past due" : "Paid"}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {reminderUrl && (isOverdue || isSent) && (
                       <a
                         href={reminderUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors shadow-2xs"
                         title="Send 1-click WhatsApp payment reminder to customer"
                       >
                         <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="hidden md:inline">WhatsApp</span>
+                        <span className="hidden sm:inline">WhatsApp</span>
                       </a>
                     )}
 
                     <Link
                       href={`/invoices/${invoice.id}`}
-                      className={`inline-flex items-center gap-1 px-3.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition-colors shadow-sm ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-[var(--radius-md)] text-xs font-semibold transition-colors shadow-sm ${
                         isDraft
                           ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
                           : isOverdue || isSent
@@ -311,8 +311,11 @@ export default async function InvoicesPage() {
                           : "bg-[var(--color-surface-muted)] text-[var(--color-text)] hover:bg-[var(--color-border)]"
                       }`}
                     >
-                      <span>{isDraft ? "Review & send" : isOverdue || isSent ? "Manage & pay" : "View"}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span>
+                        <span className="sm:hidden">{isDraft ? "Review" : isOverdue || isSent ? "Manage" : "View"}</span>
+                        <span className="hidden sm:inline">{isDraft ? "Review & send" : isOverdue || isSent ? "Manage & pay" : "View"}</span>
+                      </span>
+                      <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </Link>
                   </div>
                 </div>

@@ -32,21 +32,21 @@ export function LiveStatusBadge({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[var(--color-text-secondary)] shadow-sm select-none ${className}`}
+      className={`inline-flex items-center gap-1.5 sm:gap-2 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[var(--color-text-secondary)] shadow-2xs select-none shrink-0 ${className}`}
       title="Live real-time sync active — changes from customers or background crons update automatically"
     >
       <div className="flex items-center gap-1.5">
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
           {isLive && (
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
           )}
           <span
-            className={`relative inline-flex rounded-full h-2 w-2 ${
+            className={`relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 ${
               isLive ? "bg-emerald-500" : "bg-amber-500"
             }`}
           />
         </span>
-        <span className="font-semibold text-[11px] tracking-wide text-[var(--color-text)]">
+        <span className="font-semibold text-[10px] sm:text-[11px] tracking-wide text-[var(--color-text)]">
           Live
         </span>
       </div>

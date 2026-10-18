@@ -226,15 +226,18 @@ export function CustomerInvoicePaymentCard({
               href={paymentLinkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-base font-bold rounded-[var(--radius-md)] transition-colors shadow-md text-center cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-sm sm:text-base font-bold rounded-[var(--radius-md)] transition-colors shadow-md text-center cursor-pointer"
             >
-              <CreditCard className="w-5 h-5 flex-shrink-0" />
-              <span>Pay {totalFormatted} Online Now</span>
-              <ExternalLink className="w-4 h-4 opacity-75" />
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>
+                <span className="sm:hidden">Pay {totalFormatted} Now</span>
+                <span className="hidden sm:inline">Pay {totalFormatted} Online Now</span>
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-75" />
             </a>
 
-            <div className="flex items-center justify-center gap-4 text-[11px] text-[var(--color-text-muted)] pt-1">
-              <span>🔒 256-bit SSL Encrypted</span>
+            <div className="flex items-center justify-center gap-2 sm:gap-4 text-[10px] sm:text-[11px] text-[var(--color-text-muted)] pt-1 flex-wrap">
+              <span>🔒 256-bit SSL</span>
               <span>•</span>
               <span>Instant Verification</span>
               <span>•</span>
@@ -245,31 +248,31 @@ export function CustomerInvoicePaymentCard({
 
         {/* Tab 2: Direct Bank Transfer */}
         {(activeTab === "bank" || !paymentLinkUrl) && (
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             <div className="text-xs text-[var(--color-text-secondary)]">
               Transfer exactly <strong>{totalFormatted}</strong> to the verified business account below:
             </div>
 
             {effectiveAccountNumber ? (
               <>
-                <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
+                <div className="p-3.5 sm:p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3 font-mono text-xs">
                 {/* Bank Name */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 pb-2 border-b border-[var(--color-border)] min-w-0">
                   <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Bank Name
                   </span>
-                  <span className="font-bold text-[var(--color-text)] text-sm sm:text-right break-words min-w-0">
+                  <span className="font-bold text-[var(--color-text)] text-xs sm:text-sm sm:text-right break-words min-w-0">
                     {effectiveBankName || "Official Settlement Bank"}
                   </span>
                 </div>
 
                 {/* Account Number with 1-Click Copy */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2 border-b border-[var(--color-border)] min-w-0">
                   <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Account Number
                   </span>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-lg font-extrabold text-[var(--color-primary)] tracking-wider">
+                    <span className="text-base sm:text-lg font-extrabold text-[var(--color-primary)] tracking-wider">
                       {effectiveAccountNumber}
                     </span>
                     <button
@@ -295,23 +298,23 @@ export function CustomerInvoicePaymentCard({
 
                 {/* Account Name */}
                 {effectiveAccountName && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 pb-2 border-b border-[var(--color-border)] min-w-0">
                     <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                       Account Name
                     </span>
-                    <span className="font-semibold text-[var(--color-text)] sm:text-right break-words min-w-0">
+                    <span className="font-semibold text-[var(--color-text)] sm:text-right break-words min-w-0 text-xs">
                       {effectiveAccountName}
                     </span>
                   </div>
                 )}
 
                 {/* Payment Reference */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 min-w-0">
                   <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Payment Reference
                   </span>
                   <div className="flex items-center gap-1.5 shrink-0 sm:text-right">
-                    <span className="font-bold text-[var(--color-text)]">
+                    <span className="font-bold text-[var(--color-text)] text-xs">
                       {invoiceNumber}
                     </span>
                     <button
@@ -340,14 +343,14 @@ export function CustomerInvoicePaymentCard({
               )}
             </>
           ) : effectiveNotes ? (
-            <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-sans text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden space-y-1">
+            <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-sans text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden space-y-1">
               <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
                 Payment Instructions
               </span>
               <p className="whitespace-pre-wrap">{effectiveNotes}</p>
             </div>
           ) : (
-            <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
+            <div className="p-3.5 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
               Please contact {businessName} directly for bank settlement instructions.
             </div>
           )}
@@ -355,19 +358,22 @@ export function CustomerInvoicePaymentCard({
             {/* Step 2: Confirm on WhatsApp */}
             {whatsappProofUrl && (
               <div className="pt-2 space-y-2">
-                <span className="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider block">
                   After Transferring:
                 </span>
                 <a
                   href={whatsappProofUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-[var(--radius-md)] transition-colors shadow-sm text-center cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-bold rounded-[var(--radius-md)] transition-colors shadow-sm text-center cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>I Have Made This Transfer (Confirm on WhatsApp)</span>
+                  <span>
+                    <span className="sm:hidden">Confirm Payment on WhatsApp</span>
+                    <span className="hidden sm:inline">I Have Made This Transfer (Confirm on WhatsApp)</span>
+                  </span>
                 </a>
-                <p className="text-[11px] text-[var(--color-text-muted)] text-center">
+                <p className="text-[10px] sm:text-[11px] text-[var(--color-text-muted)] text-center">
                   Opens WhatsApp with {businessName} and pre-fills your payment confirmation.
                 </p>
               </div>

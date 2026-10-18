@@ -21,7 +21,7 @@ const profileSchema = z.object({
   paymentDetails: z.string().max(2000).optional().nullable(),
   quoteFollowUpDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
   reviewReminderDelayDays: z.coerce.number().int().min(1, "Must be at least 1 day").max(7, "Must be at most 7 days").optional(),
-  logoUrl: z.string().max(1000).optional().nullable(),
+  logoUrl: z.string().max(3000000).optional().nullable(),
   notificationPhone: z.string().max(50).optional().nullable(),
   bankName: z.string().max(100).optional().nullable(),
   bankCode: z.string().max(50).optional().nullable(),

@@ -97,7 +97,7 @@ export default async function QuotesPage() {
 
                   {/* Customer Name & Link */}
                   <Link href={`/quotes/${quote.id}`} className="group block">
-                    <h3 className="text-base font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                    <h3 className="text-base font-bold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">
                       {quote.lead.customerName}
                     </h3>
                   </Link>

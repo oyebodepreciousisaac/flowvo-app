@@ -126,13 +126,13 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
               <span className="font-mono text-sm font-bold text-[var(--color-text-secondary)] bg-[var(--color-surface-muted)] px-2.5 py-0.5 rounded border border-[var(--color-border)]">
                 {invoice.invoiceNumber}
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-text)]">
                 {invoice.customerName}
               </h1>
               <StatusChip status={invoice.status} />
               {invoice.status === "SENT" && (
                 <span
-                  className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                  className={`text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
                     invoice.emailDeliveryStatus === "BOUNCED"
                       ? "bg-[var(--color-status-overdue)] text-[var(--color-error)] border-[#f8b4b4]"
                       : "bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)] border-[var(--color-border)]"
@@ -142,17 +142,17 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                 </span>
               )}
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[var(--color-text-secondary)]">
+            <div className="mt-2 flex flex-wrap items-center gap-2.5 sm:gap-4 text-[11px] sm:text-xs text-[var(--color-text-secondary)]">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
-                <span className="break-all">{invoice.customerEmail}</span>
+                <span className="truncate max-w-[200px] sm:max-w-none">{invoice.customerEmail}</span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
                 <span>Due: {dueDateFormatted}</span>
               </div>
               {invoice.job && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <Briefcase className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                   <Link
                     href={`/jobs/${invoice.jobId}`}
@@ -163,7 +163,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                 </div>
               )}
               {invoice.quote && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <FileText className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                   <Link
                     href={`/quotes/${invoice.quoteId}`}
@@ -176,20 +176,20 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="text-right">
+          <div className="text-left sm:text-right pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]">
             <span className="block text-xs uppercase font-semibold text-[var(--color-text-muted)]">
               Total Due ({currency})
             </span>
-            <span className="font-mono text-2xl font-bold text-[var(--color-primary)]">
+            <span className="font-mono text-xl sm:text-2xl font-bold text-[var(--color-primary)]">
               {totalFormatted}
             </span>
             {invoice.business.currency && invoice.business.currency.toUpperCase() !== currency && (
-              <span className="block text-xs text-[var(--color-text-secondary)] font-mono font-semibold mt-0.5">
+              <span className="block text-[11px] sm:text-xs text-[var(--color-text-secondary)] font-mono font-semibold mt-0.5">
                 ≈ {formatAmount(convertCurrency(invoice.total, currency, invoice.business.currency), invoice.business.currency)}
               </span>
             )}
             {invoice.paidAt && (
-              <span className="block text-xs text-[var(--color-primary)] font-medium mt-0.5">
+              <span className="block text-[11px] sm:text-xs text-[var(--color-primary)] font-medium mt-0.5">
                 Paid on {new Date(invoice.paidAt).toLocaleDateString("en-GB")}
               </span>
             )}

@@ -203,11 +203,11 @@ export function InvoiceDetailActions({
     <div className="space-y-4">
       {/* Foreign currency notice if invoice currency doesn't match workspace default */}
       {invoiceCurrency.toUpperCase() !== businessCurrency.toUpperCase() && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs text-[var(--color-text)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs text-[var(--color-text)]">
           <div className="flex items-center gap-2">
             <Coins className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-            <span>
-              This invoice is recorded in <strong>{invoiceCurrency}</strong> while your workspace currency is <strong>{businessCurrency}</strong>.
+            <span className="text-[11px] sm:text-xs">
+              Recorded in <strong>{invoiceCurrency}</strong> (Workspace: <strong>{businessCurrency}</strong>).
             </span>
           </div>
           <button
@@ -216,10 +216,10 @@ export function InvoiceDetailActions({
               setSelectedCurrency(businessCurrency);
               setShowCurrencyModal(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[var(--color-surface)] hover:bg-[var(--color-primary-subtle)] text-[var(--color-primary)] border border-[var(--color-border)] font-semibold cursor-pointer shrink-0 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-[var(--color-surface)] hover:bg-[var(--color-primary-subtle)] text-[var(--color-primary)] border border-[var(--color-border)] font-semibold cursor-pointer shrink-0 transition-colors shadow-2xs text-xs"
           >
             <Coins className="w-3.5 h-3.5" />
-            <span>Convert / Switch to {businessCurrency}</span>
+            <span>Convert to {businessCurrency}</span>
           </button>
         </div>
       )}
@@ -241,16 +241,19 @@ export function InvoiceDetailActions({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
         {currentStatus === "DRAFT" && (
           <button
             type="button"
             disabled={loading}
             onClick={() => setShowSendModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Review &amp; send invoice</span>
+            <span>
+              <span className="sm:hidden">Send invoice</span>
+              <span className="hidden sm:inline">Review &amp; send invoice</span>
+            </span>
           </button>
         )}
 
@@ -259,7 +262,7 @@ export function InvoiceDetailActions({
             type="button"
             disabled={loading}
             onClick={() => setShowPaidModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] active:bg-[var(--color-primary-active)] text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Mark as paid</span>
@@ -267,8 +270,8 @@ export function InvoiceDetailActions({
         )}
 
         {currentStatus === "PAID" && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-status-complete)] text-[var(--color-primary)] text-xs font-semibold">
-            <CheckCircle2 className="w-4 h-4" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-status-complete)] text-[var(--color-primary)] text-xs font-semibold">
+            <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Paid in full</span>
           </div>
         )}
@@ -278,7 +281,7 @@ export function InvoiceDetailActions({
           href={`/invoices/${invoiceId}/print`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs"
         >
           <Printer className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
           <span>Print / PDF</span>
@@ -291,7 +294,7 @@ export function InvoiceDetailActions({
             setSelectedCurrency(businessCurrency);
             setShowCurrencyModal(true);
           }}
-          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-2xs cursor-pointer"
           title="Change invoice currency or convert via FX rates"
         >
           <Coins className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
@@ -304,11 +307,14 @@ export function InvoiceDetailActions({
             type="button"
             disabled={loading}
             onClick={handleSendWhatsAppOnly}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
             title="Send invoice directly via WhatsApp without sending an email"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span>Send on WhatsApp</span>
+            <span>
+              <span className="sm:hidden">WhatsApp</span>
+              <span className="hidden sm:inline">Send on WhatsApp</span>
+            </span>
           </button>
         )}
 
@@ -327,11 +333,14 @@ export function InvoiceDetailActions({
             })}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
             title="Send polite WhatsApp payment reminder to customer"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span>Send WhatsApp Reminder</span>
+            <span>
+              <span className="sm:hidden">Reminder</span>
+              <span className="hidden sm:inline">Send WhatsApp Reminder</span>
+            </span>
           </a>
         )}
 
@@ -339,18 +348,21 @@ export function InvoiceDetailActions({
         <button
           type="button"
           onClick={copyPublicLink}
-          className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors cursor-pointer shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 border border-[var(--color-border)] hover:bg-[var(--color-surface-muted)] text-[var(--color-text)] text-xs font-semibold rounded-[var(--radius-md)] transition-colors cursor-pointer shadow-2xs"
           title="Copy customer view and payment link"
         >
           {copiedPublicLink ? (
             <>
               <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-emerald-700 font-bold">Copied Public Link!</span>
+              <span className="text-emerald-700 font-bold">Copied!</span>
             </>
           ) : (
             <>
               <Copy className="w-3.5 h-3.5 text-[var(--color-text-secondary)]" />
-              <span>Copy Customer Link</span>
+              <span>
+                <span className="sm:hidden">Copy link</span>
+                <span className="hidden sm:inline">Copy Customer Link</span>
+              </span>
             </>
           )}
         </button>

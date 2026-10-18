@@ -20,6 +20,8 @@ import {
   Image as ImageIcon,
   MessageCircle,
   RefreshCw,
+  UploadCloud,
+  Trash2,
 } from "lucide-react";
 import { SUPPORTED_COUNTRIES, SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { cleanNotesText } from "@/lib/bank-details";
@@ -63,6 +65,97 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   const [address, setAddress] = useState(initialBusiness.address || "");
   const [logoUrl, setLogoUrl] = useState(initialBusiness.logoUrl || "");
   const [notificationPhone, setNotificationPhone] = useState(initialBusiness.notificationPhone || "");
+
+  // Direct Logo File Upload states & processor
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [logoUploadSuccess, setLogoUploadSuccess] = useState<string | null>(null);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const processLogoFile = (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setLogoUploadError("Please select a valid image file (PNG, JPG, SVG, or WebP).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setLogoUploadError("File size is too large. Please select an image under 8MB.");
+      return;
+    }
+
+    setLogoUploading(true);
+    setLogoUploadError(null);
+    setLogoUploadSuccess(null);
+
+    // If SVG, read as text / base64 directly
+    if (file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setLogoUrl(result);
+        setLogoUploading(false);
+        setLogoUploadSuccess("SVG vector logo loaded successfully.");
+      };
+      reader.onerror = () => {
+        setLogoUploadError("Failed to read SVG file.");
+        setLogoUploading(false);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // For raster images (PNG, JPG, WebP), resize to max 500x500 for crisp, lightweight storage
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 500;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          setLogoUrl(e.target?.result as string);
+          setLogoUploading(false);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        let dataUrl = canvas.toDataURL("image/webp", 0.92);
+        if (!dataUrl.startsWith("data:image/webp")) {
+          dataUrl = canvas.toDataURL("image/png");
+        }
+        setLogoUrl(dataUrl);
+        setLogoUploading(false);
+        const kbSize = Math.round((dataUrl.length * 3) / 4 / 1024);
+        setLogoUploadSuccess(`Logo optimized (${width}×${height}px, ~${kbSize} KB) ready to save!`);
+      };
+      img.onerror = () => {
+        setLogoUploadError("Could not process image file.");
+        setLogoUploading(false);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      setLogoUploadError("Failed to read image file.");
+      setLogoUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Multi-Currency & Gateway
   const [country, setCountry] = useState(initialBusiness.country || "NG");
@@ -519,38 +612,156 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
 
         {/* Business Logo & Owner WhatsApp Alerts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          {/* Business Logo */}
+          {/* Business Logo Direct Upload & Preview */}
           <div>
-            <label htmlFor="bizLogo" className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
-              Business Logo URL <span className="font-normal text-[var(--color-text-muted)] lowercase">(shown on quotes &amp; invoices)</span>
+            <label className="block text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+              Business Logo <span className="font-normal text-[var(--color-text-muted)] lowercase">(shown on quotes &amp; invoices)</span>
             </label>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-muted)] flex items-center justify-center shrink-0 overflow-hidden">
-                {logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt="Logo preview"
-                    className="w-full h-full object-contain p-0.5"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = "none";
+
+            {/* Hidden file input for native camera/gallery/filepicker */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  processLogoFile(file);
+                }
+              }}
+            />
+
+            {logoUrl ? (
+              <div className="p-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xs space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-muted)] flex items-center justify-center shrink-0 overflow-hidden p-1 shadow-inner">
+                    <img
+                      src={logoUrl}
+                      alt="Business logo preview"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={logoUploading}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-semibold bg-[var(--color-primary-subtle)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors cursor-pointer"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{logoUploading ? "Processing..." : "Change Logo"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLogoUrl("");
+                          setLogoUploadSuccess(null);
+                          setLogoUploadError(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-md)] text-xs font-semibold text-[var(--color-error)] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                    {logoUploadSuccess ? (
+                      <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 shrink-0" />
+                        <span>{logoUploadSuccess}</span>
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-[var(--color-text-muted)]">
+                        Logo active. Displayed on public quotes and invoices.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--color-border)] flex items-center justify-between text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline cursor-pointer"
+                  >
+                    {showUrlInput ? "Hide image link" : "Or use image URL instead"}
+                  </button>
+                </div>
+
+                {showUrlInput && (
+                  <input
+                    type="url"
+                    value={logoUrl.startsWith("data:") ? "" : logoUrl}
+                    onChange={(e) => {
+                      setLogoUrl(e.target.value);
+                      setLogoUploadSuccess(null);
                     }}
+                    placeholder="https://.../logo.png"
+                    className="w-full h-9 px-2.5 text-xs rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
                   />
-                ) : (
-                  <ImageIcon className="w-5 h-5 text-[var(--color-text-muted)]" />
                 )}
               </div>
-              <input
-                id="bizLogo"
-                type="url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://.../logo.png"
-                className="flex-1 h-10 px-3 text-sm rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
-              />
-            </div>
-            <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
-              Direct image link (.png, .jpg, or .svg). Displayed at the top of customer quotes and payment invoices.
-            </p>
+            ) : (
+              <div className="space-y-2">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) processLogoFile(file);
+                  }}
+                  className="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] rounded-[var(--radius-md)] bg-[var(--color-surface-muted)]/50 hover:bg-[var(--color-surface-muted)] transition-all cursor-pointer text-center group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)] mb-1.5 group-hover:scale-105 transition-transform">
+                    {logoUploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--color-primary)]" />
+                    ) : (
+                      <UploadCloud className="w-4 h-4" />
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">
+                    {logoUploading ? "Optimizing image..." : "Tap or drop image to upload logo"}
+                  </span>
+                  <span className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                    Supports PNG, JPG, WebP, or SVG (auto-scaled for invoices)
+                  </span>
+                </div>
+
+                {logoUploadError && (
+                  <p className="text-[11px] text-[var(--color-error)] font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{logoUploadError}</span>
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between text-[11px] px-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline cursor-pointer"
+                  >
+                    {showUrlInput ? "Cancel URL input" : "Or paste image link"}
+                  </button>
+                </div>
+
+                {showUrlInput && (
+                  <input
+                    type="url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://.../logo.png"
+                    className="w-full h-9 px-2.5 text-xs rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Owner WhatsApp Notification Phone */}

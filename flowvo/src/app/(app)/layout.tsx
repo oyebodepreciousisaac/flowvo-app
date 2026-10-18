@@ -16,6 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ? {
           name: session.user.business.name,
           slug: session.user.business.slug,
+          logoUrl: session.user.business.logoUrl,
         }
       : null,
   };
