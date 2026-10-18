@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import crypto from "crypto";
-import { formatAmount, getCurrencySymbol, SUPPORTED_CURRENCIES } from "@/lib/currency";
+import {
+  formatAmount,
+  getCurrencySymbol,
+  SUPPORTED_CURRENCIES,
+  convertCurrency,
+  calculateMultiCurrencyTotals,
+} from "@/lib/currency";
 import { verifyPaystackWebhookSignature } from "@/lib/paystack";
 import { verifyStripeWebhookSignature } from "@/lib/stripe";
 import { invoiceEmailHtml, invoiceEmailText } from "@/lib/email-templates/invoice-email";
@@ -45,6 +51,38 @@ describe("Slice A: Multi-Currency Engine", () => {
   it("handles unknown or fallback currencies gracefully", () => {
     const res = formatAmount(5000, "XYZ");
     expect(res).toContain("50.00");
+  });
+
+  it("converts multi-currency amounts using FX baseline rates", () => {
+    // 40 GBP in pence = 4000. At 0.77 GBP/USD and 1600 NGN/USD => ~83,116.88 NGN
+    const gbpInNgn = convertCurrency(4000, "GBP", "NGN");
+    expect(gbpInNgn).toBeGreaterThan(8000000);
+    expect(gbpInNgn).toBeLessThan(9000000);
+
+    // 40 EUR in cents = 4000. At 0.92 EUR/USD and 1600 NGN/USD => ~69,565.22 NGN
+    const eurInNgn = convertCurrency(4000, "EUR", "NGN");
+    expect(eurInNgn).toBeGreaterThan(6500000);
+    expect(eurInNgn).toBeLessThan(7500000);
+
+    // Same currency conversion
+    expect(convertCurrency(7000000, "NGN", "NGN")).toBe(7000000);
+  });
+
+  it("accurately aggregates multi-currency totals without naive addition", () => {
+    // Item 1: 70,000 NGN (7000000 kobo)
+    // Item 2: 40 GBP (£40.00 = 4000 pence)
+    const items = [
+      { total: 7000000, currency: "NGN" },
+      { total: 4000, currency: "GBP" },
+    ];
+
+    const result = calculateMultiCurrencyTotals(items, "NGN");
+    expect(result.hasMultipleCurrencies).toBe(true);
+    expect(result.currencies).toEqual(["NGN", "GBP"]);
+    expect(result.byCurrency["NGN"]).toBe(7000000);
+    expect(result.byCurrency["GBP"]).toBe(4000);
+    // Converted total should be ~153,116.88 NGN (15311688 kobo), NOT 7,004,000 kobo!
+    expect(result.convertedTotal).toBeGreaterThan(15000000);
   });
 });
 

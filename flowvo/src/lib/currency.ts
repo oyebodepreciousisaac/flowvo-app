@@ -127,3 +127,91 @@ export function getCurrencySymbol(currencyCode: string = "GBP"): string {
   const code = (currencyCode || "GBP").toUpperCase();
   return SUPPORTED_CURRENCIES[code]?.symbol ?? "£";
 }
+
+/**
+ * FX Baseline Exchange Rates (Relative to 1.0 USD)
+ * Used to normalize and convert multi-currency metrics across workspaces.
+ *
+ * 1 USD = 1,600 NGN
+ * 1 GBP = 0.77 USD (1 GBP ≈ 2,078 NGN)
+ * 1 EUR = 0.92 USD (1 EUR ≈ 1,739 NGN)
+ * 1 GHS = 15.5 USD (1 GHS ≈ 103 NGN)
+ * 1 ZAR = 18.2 USD (1 ZAR ≈ 88 NGN)
+ * 1 KES = 129.0 USD (1 KES ≈ 12.4 NGN)
+ */
+export const FX_RATES_TO_USD: Record<string, number> = {
+  USD: 1.0,
+  NGN: 1600.0,
+  GBP: 0.77,
+  EUR: 0.92,
+  GHS: 15.5,
+  ZAR: 18.2,
+  KES: 129.0,
+};
+
+/**
+ * Convert an amount in smallest units from one currency to another.
+ * Example:
+ *   convertCurrency(4000, "GBP", "NGN") => ~8311688 kobo (₦83,116.88)
+ *   convertCurrency(4000, "EUR", "NGN") => ~6956522 kobo (₦69,565.22)
+ */
+export function convertCurrency(
+  amountInSmallestUnit: number,
+  fromCurrency: string,
+  toCurrency: string
+): number {
+  if (!amountInSmallestUnit || isNaN(amountInSmallestUnit)) return 0;
+  const from = (fromCurrency || "USD").toUpperCase();
+  const to = (toCurrency || "USD").toUpperCase();
+
+  if (from === to) return Math.round(amountInSmallestUnit);
+
+  const fromRate = FX_RATES_TO_USD[from] || 1.0;
+  const toRate = FX_RATES_TO_USD[to] || 1.0;
+
+  // Convert from source currency to USD standard unit
+  const amountInUSD = amountInSmallestUnit / 100 / fromRate;
+  // Convert from USD to target currency standard unit
+  const targetStandard = amountInUSD * toRate;
+  // Return in target smallest unit (cents/pence/kobo)
+  return Math.round(targetStandard * 100);
+}
+
+export interface MultiCurrencyBreakdown {
+  convertedTotal: number; // in target currency's smallest unit
+  byCurrency: Record<string, number>; // currencyCode -> total in its smallest unit
+  hasMultipleCurrencies: boolean;
+  currencies: string[];
+}
+
+/**
+ * Accurately calculate totals across multiple items that may have different currencies.
+ * Prevents summing raw numbers of different currencies (e.g. 70,000 NGN + 40 EUR != 70,040 NGN).
+ */
+export function calculateMultiCurrencyTotals(
+  items: Array<{ total: number; currency?: string | null }>,
+  targetCurrency: string = "NGN"
+): MultiCurrencyBreakdown {
+  const target = (targetCurrency || "NGN").toUpperCase();
+  const byCurrency: Record<string, number> = {};
+  let convertedTotal = 0;
+
+  for (const item of items) {
+    const itemCurrency = (item.currency || target).toUpperCase();
+    const itemTotal = Number(item.total) || 0;
+
+    byCurrency[itemCurrency] = (byCurrency[itemCurrency] || 0) + itemTotal;
+    convertedTotal += convertCurrency(itemTotal, itemCurrency, target);
+  }
+
+  const currencies = Object.keys(byCurrency);
+  const hasMultipleCurrencies = currencies.length > 1;
+
+  return {
+    convertedTotal,
+    byCurrency,
+    hasMultipleCurrencies,
+    currencies,
+  };
+}
+

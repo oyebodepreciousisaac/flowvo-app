@@ -5,7 +5,7 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { ActivityTimeline } from "@/components/ActivityTimeline";
-import { formatAmount } from "@/lib/currency";
+import { formatAmount, convertCurrency } from "@/lib/currency";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { decryptField } from "@/lib/security";
 import { parseBusinessBankDetails } from "@/lib/bank-details";
@@ -183,6 +183,11 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             <span className="font-mono text-2xl font-bold text-[var(--color-primary)]">
               {totalFormatted}
             </span>
+            {invoice.business.currency && invoice.business.currency.toUpperCase() !== currency && (
+              <span className="block text-xs text-[var(--color-text-secondary)] font-mono font-semibold mt-0.5">
+                ≈ {formatAmount(convertCurrency(invoice.total, currency, invoice.business.currency), invoice.business.currency)}
+              </span>
+            )}
             {invoice.paidAt && (
               <span className="block text-xs text-[var(--color-primary)] font-medium mt-0.5">
                 Paid on {new Date(invoice.paidAt).toLocaleDateString("en-GB")}
@@ -205,6 +210,9 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             emailDeliveryStatus={invoice.emailDeliveryStatus}
             dueDateFormatted={dueDateFormatted}
             paymentLinkUrl={invoice.paymentLinkUrl}
+            businessCurrency={invoice.business.currency || "NGN"}
+            invoiceCurrency={currency}
+            invoiceTotalPence={invoice.total}
           />
         </div>
       </div>
