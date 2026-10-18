@@ -118,5 +118,15 @@ export function verifyStripeWebhookSignature(
     .update(signedPayload, "utf8")
     .digest("hex");
 
-  return crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSignature, "hex"));
+  try {
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expectedSignature, "hex");
+    if (sigBuf.length !== expBuf.length) {
+      crypto.timingSafeEqual(expBuf, expBuf);
+      return false;
+    }
+    return crypto.timingSafeEqual(sigBuf, expBuf);
+  } catch {
+    return false;
+  }
 }

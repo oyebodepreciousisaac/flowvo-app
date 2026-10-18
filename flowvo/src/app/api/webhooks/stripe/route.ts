@@ -12,6 +12,25 @@ export async function POST(request: NextRequest) {
   }
 
   const signature = request.headers.get("stripe-signature");
+
+  // ─── 1. Mandatory Webhook Signature Validation ─────────────────────────────
+  if (!signature) {
+    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+  }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+  if (!webhookSecret) {
+    return NextResponse.json(
+      { error: "Stripe webhook secret is not configured" },
+      { status: 500 }
+    );
+  }
+
+  const isValid = verifyStripeWebhookSignature(rawBody, signature, webhookSecret);
+  if (!isValid) {
+    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
+  }
+
   let payload: Record<string, any>;
   try {
     payload = JSON.parse(rawBody);
@@ -44,14 +63,6 @@ export async function POST(request: NextRequest) {
       business: true,
     },
   });
-
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
-  if (webhookSecret && signature) {
-    const isValid = verifyStripeWebhookSignature(rawBody, signature, webhookSecret);
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
-    }
-  }
 
   if (!invoice) {
     return NextResponse.json({ ok: true, message: "Invoice not found for reference" });

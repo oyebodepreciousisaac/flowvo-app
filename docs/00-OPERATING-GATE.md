@@ -1,50 +1,46 @@
-# Operating Gate
+# Operating Gate & Phase Tracking Log
 
-This document keeps the project moving without unnecessary research or premature coding.
+> **Current Milestone:** Phase 1–7 Deliverables Completed; Gate 1 (Brand Approval) Pending  
+> **Last Updated:** October 2026  
 
-## Evidence labels
+---
 
-Use these labels in project decisions:
+## 1. Evidence Labels & Operating Standard
 
-- FACT — supported by a source, system behavior, or direct user evidence.
-- ASSUMPTION — believed but not yet verified.
-- HYPOTHESIS — a testable explanation or product proposition.
-- INTERPRETATION — reasoned conclusion from evidence.
-- DECISION — chosen direction and why.
-- UNKNOWN — information that materially affects the next decision.
+In accordance with project rules, all assertions are categorized:
+- **FACT:** Supported by active code, test execution, web search, or live DNS/RDAP queries.
+- **ASSUMPTION:** Inferred operational patterns (e.g. mobile data constraints in sub-Saharan Africa).
+- **HYPOTHESIS:** Commercial testable propositions (e.g. willingness to pay ₦10,000/mo).
+- **INTERPRETATION:** Reasoned conclusions from competitive analysis and naming collisions.
+- **DECISION:** Explicit chosen direction.
+- **UNKNOWN:** External dependencies requiring founder input.
 
-## Fast-track rule
+---
 
-Research only when the answer can change one of these decisions:
+## 2. Phase Execution Status Register
 
-1. Who the initial user is.
-2. What recurring workflow problem is worth solving.
-3. What the smallest valuable workflow is.
-4. Why the product should exist alongside existing alternatives.
-5. What must be true before implementation.
+| Phase | Deliverable | Status | Summary of Evidence & Outcomes |
+| :---: | :--- | :---: | :--- |
+| **Phase 1** | Understand Existing Product | **COMPLETED** | Documented in `docs/PRODUCT-POSITIONING.md`. Full 5-handoff lead-to-cash analysis and feature comparison. |
+| **Phase 2** | Ideal Customer Profile (ICP) | **COMPLETED** | Documented in `docs/PRODUCT-POSITIONING.md`. Detailed profiling of Nigerian trade SMBs (solar, HVAC, electrical) as wedge, plus global expansion. |
+| **Phase 3** | Brand Naming Research | **COMPLETED** | Documented in `docs/BRAND-NAMING-RESEARCH.md`. 20 candidate names audited. Discovery of active UK trademark collision with `flowvo.ai`. |
+| **Phase 4** | Domain Availability & Pricing | **COMPLETED** | Documented in `docs/DOMAIN-AVAILABILITY.md`. Live DNS/RDAP checks on `.com`, `.app`, `.io`, `.co`. Top 5 finalists selected; **CraftRail** (`craftrail.app`) recommended #1. |
+| **Phase 5** | Application Security Audit | **COMPLETED** | Documented in `docs/SECURITY-AUDIT.md`. OWASP Top 10 & ASVS assessment covering 20 technical areas. |
+| **Phase 6** | Vulnerability Remediation | **COMPLETED** | Documented in `docs/SECURITY-REMEDIATION.md`. Fixed webhook bypasses, IDOR, CSRF, rate limits, production keys, and timing leaks. 13 new unit tests added. |
+| **Phase 7** | QA & Production Readiness | **COMPLETED** | Documented in `docs/PRODUCTION-READINESS.md`. 74/74 unit tests pass, zero TypeScript errors, 34/34 production routes compile cleanly with Turbopack. |
 
-When these are sufficiently clear, move to product definition and build. Do not keep researching for completeness.
+---
 
-## Build gate
+## 3. Active Gate: Gate 1 (Brand Selection Approval)
 
-Start serious implementation only when the project can state:
-
-- Initial user: ____________________
-- Repeating problem: ____________________
-- Current workaround: ____________________
-- Economic/time/risk consequence: ____________________
-- Smallest valuable workflow: ____________________
-- Product wedge/differentiation hypothesis: ____________________
-- Critical unknowns still open: ____________________
-
-## Stop conditions
-
-Pause or change direction when:
-
-- the problem is still vague,
-- the target user is unclear,
-- the workflow is not recurring or consequential,
-- the product is only a collection of unrelated features,
-- the differentiation is simply "AI-powered",
-- the MVP cannot be explained as one coherent workflow,
-- major technical work is being proposed without product evidence.
+> [!IMPORTANT]
+> **GATE 1 DECISION PENDING (UNKNOWN):**  
+> Which brand name does the founder approve to replace "Flowvo"?
+> 
+> * **Option 1 (Recommended #1):** **CraftRail** (`craftrail.app`) — Total trademark clarity, operational authority.
+> * **Option 2:** **Settlevo** (`settlevo.app`) — Retains "vo" cadence while emphasizing payment settlement.
+> * **Option 3:** **CraftSpur** (`craftspur.com`) — Rare clean `.com` available at standard registrar price ($10.98/yr).
+> * **Option 4:** **CraftPulse** (`craftpulse.app`) — Energetic, modern rhythm for trade pros.
+> * **Option 5:** **JobVance** (`jobvance.app`) — Pragmatic forward momentum for jobs.
+> 
+> *Constraint Enforced:* Package names, application files, and repository configurations remain unchanged until the founder explicitly submits their decision.

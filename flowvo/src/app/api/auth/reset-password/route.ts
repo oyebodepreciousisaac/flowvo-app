@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
 import { strongPasswordSchema } from "@/lib/password";
+import { isSameOrigin, rateLimit, getClientIp } from "@/lib/security";
 
 const resetSchema = z.object({
   token: z.string().min(1),
@@ -13,7 +14,29 @@ const resetSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export async function POST(request: Request) {
+const RESET_LIMIT = 5;
+const RESET_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+export async function POST(request: NextRequest) {
+  // ── CSRF check ──────────────────────────────────────────────────────────────
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // ── Rate limit ──────────────────────────────────────────────────────────────
+  const ip = getClientIp(request);
+  const { allowed, retryAfterMs } = rateLimit(`reset-pwd:${ip}`, RESET_LIMIT, RESET_WINDOW_MS);
+  if (!allowed) {
+    const retrySecs = Math.ceil(retryAfterMs / 1000);
+    return NextResponse.json(
+      { error: `Too many password reset attempts. Please wait ${Math.ceil(retrySecs / 60)} minute(s) before trying again.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retrySecs) },
+      }
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = resetSchema.safeParse(body);

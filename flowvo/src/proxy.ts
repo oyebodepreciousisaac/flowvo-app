@@ -28,10 +28,10 @@ const PUBLIC_PREFIXES = [
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
   if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
-  // Public customer quote actions
+  // Public customer quote actions (protected by high-entropy quoteToken in route handler)
   if (
     pathname.startsWith("/api/quotes/") &&
-    (pathname.endsWith("/accept") || pathname.endsWith("/decline"))
+    (pathname.endsWith("/accept") || pathname.endsWith("/decline") || pathname.endsWith("/receipt"))
   ) {
     return true;
   }

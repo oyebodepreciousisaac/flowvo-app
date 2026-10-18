@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { timingSafeCompare } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   return handleCron(request);
@@ -18,7 +19,7 @@ async function handleCron(request: NextRequest) {
   const providedSecret =
     authHeader?.replace(/^Bearer\s+/i, "") ?? xCronSecret;
 
-  if (cronSecret && providedSecret !== cronSecret) {
+  if (cronSecret && (!providedSecret || !timingSafeCompare(providedSecret, cronSecret))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

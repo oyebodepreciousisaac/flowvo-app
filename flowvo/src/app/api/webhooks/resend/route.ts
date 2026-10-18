@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Invoice } from "@prisma/client";
+import { timingSafeCompare } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
+  // ─── Webhook Authentication ────────────────────────────────────────────────
+  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const authHeader = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+    const customHeader =
+      request.headers.get("x-resend-webhook-secret") ||
+      request.headers.get("x-webhook-secret");
+    const provided = authHeader || customHeader;
+    if (!provided || !timingSafeCompare(provided, webhookSecret)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Resend webhook secret not configured" },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await request.json();
 

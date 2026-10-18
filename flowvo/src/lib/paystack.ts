@@ -324,6 +324,16 @@ export function verifyPaystackWebhookSignature(
 ): boolean {
   const key = getEffectivePaystackSecretKey(secretKey);
   if (!signature || !key) return false;
-  const hash = crypto.createHmac("sha512", key.trim()).update(rawBody).digest("hex");
-  return hash === signature;
+  try {
+    const hash = crypto.createHmac("sha512", key.trim()).update(rawBody).digest("hex");
+    const hashBuf = Buffer.from(hash, "utf8");
+    const sigBuf = Buffer.from(signature.trim(), "utf8");
+    if (hashBuf.length !== sigBuf.length) {
+      crypto.timingSafeEqual(hashBuf, hashBuf);
+      return false;
+    }
+    return crypto.timingSafeEqual(hashBuf, sigBuf);
+  } catch {
+    return false;
+  }
 }

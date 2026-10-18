@@ -129,10 +129,15 @@ export function isSameOrigin(request: Request): boolean {
 // Format: "iv_hex:authTag_hex:ciphertext_hex"  (all values hex-encoded)
 
 const DEV_FALLBACK_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-const ENCRYPTION_KEY_HEX = process.env.FIELD_ENCRYPTION_KEY || (process.env.NODE_ENV !== "production" ? DEV_FALLBACK_KEY : "");
 
 function getEncryptionKey(): Buffer {
-  const keyHex = ENCRYPTION_KEY_HEX || DEV_FALLBACK_KEY;
+  if (process.env.NODE_ENV === "production" && !process.env.FIELD_ENCRYPTION_KEY) {
+    throw new Error(
+      "FATAL SECURITY CONFIGURATION: FIELD_ENCRYPTION_KEY must be set in production environment. " +
+        "Generate with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    );
+  }
+  const keyHex = process.env.FIELD_ENCRYPTION_KEY || (process.env.NODE_ENV !== "production" ? DEV_FALLBACK_KEY : "");
   if (!keyHex || keyHex.length !== 64) {
     throw new Error(
       "FIELD_ENCRYPTION_KEY env var must be a 64-character hex string (32 bytes). " +
@@ -216,4 +221,24 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
 export function escapeHtml(str: string | null | undefined): string {
   if (!str) return "";
   return str.replace(/[&<>"']/g, (char) => HTML_ESCAPE_MAP[char] ?? char);
+}
+
+// ─── 5. Timing-Safe Comparison ────────────────────────────────────────────────
+//
+// Prevents side-channel timing attacks when comparing secrets, tokens,
+// and HMAC hashes. Always executes in constant time.
+//
+export function timingSafeCompare(
+  a: string | null | undefined,
+  b: string | null | undefined
+): boolean {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) {
+    // Perform dummy constant-time comparison to prevent length timing leakage
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
 }

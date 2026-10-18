@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatAmount } from "@/lib/currency";
 import { broadcastLiveEvent } from "@/lib/live-channel";
@@ -9,11 +10,9 @@ export async function POST(
 ) {
   const { id: tokenOrId } = await context.params;
 
-  // Find quote by quoteToken or id
-  const quote = await prisma.quote.findFirst({
-    where: {
-      OR: [{ quoteToken: tokenOrId }, { id: tokenOrId }],
-    },
+  // 1. Try finding by quoteToken (public customer receipt submission)
+  let quote = await prisma.quote.findUnique({
+    where: { quoteToken: tokenOrId },
     include: {
       lead: true,
       business: true,
@@ -23,6 +22,28 @@ export async function POST(
       },
     },
   });
+
+  // 2. If not found by token, require active owner session for internal ID lookup
+  if (!quote) {
+    const session = await getCurrentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Quote not found or unauthorized" }, { status: 404 });
+    }
+    quote = await prisma.quote.findFirst({
+      where: {
+        id: tokenOrId,
+        businessId: session.user.businessId,
+      },
+      include: {
+        lead: true,
+        business: true,
+        invoices: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
+    });
+  }
 
   if (!quote) {
     return NextResponse.json({ error: "Quote not found" }, { status: 404 });

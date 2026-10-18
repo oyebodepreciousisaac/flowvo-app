@@ -20,13 +20,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // ─── 1. Mandatory Webhook Signature Validation ─────────────────────────────
+  if (!signature) {
+    return NextResponse.json({ error: "Missing x-paystack-signature header" }, { status: 401 });
+  }
+
   const masterSecretKey = process.env.PAYSTACK_SECRET_KEY || "";
   const event = payload?.event;
   const data = payload?.data;
 
-  // We are interested in charge.success
+  // We are interested in charge.success; acknowledge other events securely
   if (event !== "charge.success" || !data) {
-    if (masterSecretKey && signature) {
+    if (masterSecretKey) {
       const isValid = verifyPaystackWebhookSignature(rawBody, signature, masterSecretKey);
       if (!isValid) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
@@ -55,11 +60,16 @@ export async function POST(request: NextRequest) {
   const customSecretKey = invoice ? decryptField(invoice.business.paystackSecretKey) : null;
   const effectiveSecretKey = customSecretKey || masterSecretKey;
 
-  if (effectiveSecretKey && signature) {
-    const isValid = verifyPaystackWebhookSignature(rawBody, signature, effectiveSecretKey);
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  if (!effectiveSecretKey) {
+    return NextResponse.json(
+      { error: "Paystack webhook secret key is not configured" },
+      { status: 401 }
+    );
+  }
+
+  const isValid = verifyPaystackWebhookSignature(rawBody, signature, effectiveSecretKey);
+  if (!isValid) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   if (!invoice) {
