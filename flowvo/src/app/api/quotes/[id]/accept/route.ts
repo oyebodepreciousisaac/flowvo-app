@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatAmount } from "@/lib/currency";
 import { getNextInvoiceNumber } from "@/lib/invoice";
 import { generateInvoicePaymentLink } from "@/lib/invoice-payment";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 
 export async function POST(
   request: NextRequest,
@@ -55,34 +56,27 @@ export async function POST(
 
   const quoteCurrency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
 
-  // Helper to parse bank details from business
+  // Helper to parse bank details from business safely
   function getEffectiveBankDetails() {
-    let bName = quote?.business.bankName || "Official Settlement Bank";
-    let bAcc = quote?.business.bankAccountNumber || "";
-    let bAccName = quote?.business.bankAccountName || quote?.business.name;
-    let bNotes = "";
-
-    if (quote?.business.paymentDetails && quote.business.paymentDetails.startsWith("{")) {
-      try {
-        const parsed = JSON.parse(quote.business.paymentDetails);
-        bName = parsed.bankName || bName;
-        bAcc = parsed.accountNumber || bAcc;
-        bAccName = parsed.accountName || bAccName;
-        bNotes = parsed.notes || "";
-      } catch {
-        // ignore
-      }
-    } else if (quote?.business.paymentDetails) {
-      bNotes = quote.business.paymentDetails;
+    if (!quote?.business) {
+      return {
+        bankName: "Official Settlement Bank",
+        bankAccountNumber: "",
+        bankAccountName: "",
+        paymentNotes: "",
+        businessPhone: null,
+        businessName: "",
+      };
     }
 
+    const bankDetails = parseBusinessBankDetails(quote.business);
     return {
-      bankName: bName,
-      bankAccountNumber: bAcc,
-      bankAccountName: bAccName,
-      paymentNotes: bNotes,
-      businessPhone: quote?.business.notificationPhone || quote?.business.phone || null,
-      businessName: quote?.business.name || "",
+      bankName: bankDetails.bankName || "Official Settlement Bank",
+      bankAccountNumber: bankDetails.accountNumber || "",
+      bankAccountName: bankDetails.accountName || quote.business.name,
+      paymentNotes: bankDetails.notes || "",
+      businessPhone: quote.business.notificationPhone || quote.business.phone || null,
+      businessName: quote.business.name || "",
     };
   }
 

@@ -188,14 +188,14 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                     {invoice?.status === "PAID" ? "Settled" : "Verification Pending"}
                   </span>
                 </div>
-                <p className="text-xs text-[var(--color-text-secondary)]">
+                <p className="text-xs text-[var(--color-text-secondary)] break-words">
                   {receiptData.senderName} reported a direct transfer via{" "}
                   <strong className="text-[var(--color-text)]">{receiptData.bankName}</strong>{" "}
-                  (Ref: <code className="font-mono bg-[var(--color-surface-muted)] px-1 py-0.5 rounded">{receiptData.reference}</code>)
+                  (Ref: <code className="font-mono bg-[var(--color-surface-muted)] px-1 py-0.5 rounded break-all">{receiptData.reference}</code>)
                   {receiptData.submittedAt && ` on ${new Date(receiptData.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}.
                 </p>
                 {receiptData.note && (
-                  <p className="text-xs italic text-[var(--color-text-muted)] mt-1">
+                  <p className="text-xs italic text-[var(--color-text-muted)] mt-1 break-words">
                     &ldquo;{receiptData.note}&rdquo;
                   </p>
                 )}
@@ -285,33 +285,33 @@ export default async function QuoteDetailPage({ params }: PageProps) {
               Customer Information
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div>
+              <div className="min-w-0">
                 <span className="block text-[var(--color-text-muted)] mb-0.5">Name</span>
                 <Link
                   href={`/leads/${quote.leadId}`}
-                  className="font-semibold text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors"
+                  className="font-semibold text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors truncate block"
                 >
                   {quote.lead.customerName}
                 </Link>
               </div>
-              <div>
+              <div className="min-w-0">
                 <span className="block text-[var(--color-text-muted)] mb-0.5">Email</span>
                 <a
                   href={`mailto:${quote.lead.email}`}
-                  className="inline-flex items-center gap-1 font-medium text-[var(--color-text)] hover:text-[var(--color-primary)]"
+                  className="inline-flex items-center gap-1 font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] break-all"
                 >
-                  <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                  <span>{quote.lead.email}</span>
+                  <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+                  <span className="break-all">{quote.lead.email}</span>
                 </a>
               </div>
-              <div>
+              <div className="min-w-0">
                 <span className="block text-[var(--color-text-muted)] mb-0.5">Phone</span>
                 <a
                   href={`tel:${quote.lead.phone}`}
-                  className="inline-flex items-center gap-1 font-medium text-[var(--color-text)] hover:text-[var(--color-primary)]"
+                  className="inline-flex items-center gap-1 font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] break-all"
                 >
-                  <Phone className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                  <span>{quote.lead.phone}</span>
+                  <Phone className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+                  <span className="break-all">{quote.lead.phone}</span>
                 </a>
               </div>
             </div>

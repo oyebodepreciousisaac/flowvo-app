@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { decryptField } from "@/lib/security";
 import { formatAmount } from "@/lib/currency";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { CustomerInvoicePaymentCard } from "./CustomerInvoicePaymentCard";
@@ -128,7 +129,7 @@ export default async function PublicInvoiceViewPage({ params, searchParams }: Pa
       })}`
     : null;
 
-  const decryptedPaymentDetails = decryptField(invoice.business.paymentDetails);
+  const bankDetails = parseBusinessBankDetails(invoice.business);
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] py-8 md:py-14 px-4 sm:px-6 lg:px-8 text-[var(--color-text)]">
@@ -234,16 +235,16 @@ export default async function PublicInvoiceViewPage({ params, searchParams }: Pa
                 {invoice.customerName}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-[var(--color-text-secondary)]">
+            <div className="flex flex-wrap items-center gap-4 text-[var(--color-text-secondary)] min-w-0">
               {invoice.customerEmail && (
-                <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                  <span>{invoice.customerEmail}</span>
+                <span className="flex items-center gap-1 min-w-0">
+                  <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+                  <span className="break-all">{invoice.customerEmail}</span>
                 </span>
               )}
               {(invoice.lead?.phone || invoice.job?.customerPhone) && (
-                <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+                <span className="flex items-center gap-1 shrink-0">
+                  <Phone className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
                   <span>{invoice.lead?.phone || invoice.job?.customerPhone}</span>
                 </span>
               )}
@@ -312,13 +313,13 @@ export default async function PublicInvoiceViewPage({ params, searchParams }: Pa
 
             {/* Financial Summary Box */}
             <div className="pt-3 border-t border-[var(--color-border)] flex flex-col items-end gap-1.5 text-xs">
-              <div className="flex justify-between w-full max-w-[240px]">
+              <div className="flex justify-between items-center w-full max-w-[320px] gap-4">
                 <span className="text-[var(--color-text-secondary)]">Subtotal:</span>
                 <span className="font-mono font-semibold text-[var(--color-text)]">
                   {subtotalFormatted}
                 </span>
               </div>
-              <div className="flex justify-between w-full max-w-[240px] pt-1.5 border-t border-[var(--color-border)] text-sm sm:text-base font-extrabold">
+              <div className="flex justify-between items-center w-full max-w-[320px] pt-1.5 border-t border-[var(--color-border)] text-sm sm:text-base font-extrabold gap-4">
                 <span className="text-[var(--color-text)]">Total Due:</span>
                 <span className="font-mono text-[var(--color-primary)]">
                   {totalFormatted}
@@ -339,10 +340,10 @@ export default async function PublicInvoiceViewPage({ params, searchParams }: Pa
               paidAtFormatted={paidAtFormatted}
               paymentReference={invoice.paymentReference}
               paymentLinkUrl={invoice.paymentLinkUrl}
-              bankName={invoice.business.bankName}
-              bankAccountNumber={invoice.business.bankAccountNumber}
-              bankAccountName={invoice.business.bankAccountName}
-              paymentDetailsNotes={decryptedPaymentDetails}
+              bankName={bankDetails.bankName}
+              bankAccountNumber={bankDetails.accountNumber}
+              bankAccountName={bankDetails.accountName}
+              paymentDetailsNotes={bankDetails.notes}
               businessName={invoice.business.name}
               businessPhone={invoice.business.phone}
               businessNotificationPhone={invoice.business.notificationPhone}

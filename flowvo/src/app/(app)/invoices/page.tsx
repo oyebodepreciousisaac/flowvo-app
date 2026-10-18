@@ -5,7 +5,8 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { formatAmount } from "@/lib/currency";
-import { FileText, ArrowRight, AlertTriangle, CheckCircle2, Calendar } from "lucide-react";
+import { FileText, ArrowRight, AlertTriangle, CheckCircle2, Calendar, MessageCircle } from "lucide-react";
+import { buildInvoicePaymentReminderWhatsAppUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = { title: "Invoices — Flowvo" };
 
@@ -17,12 +18,17 @@ export default async function InvoicesPage() {
 
   const business = await prisma.business.findUnique({
     where: { id: session.user.businessId },
-    select: { currency: true },
+    select: { currency: true, name: true, phone: true, notificationPhone: true },
   });
   const businessCurrency = business?.currency || "NGN";
+  const businessName = business?.name || "Flowvo Business";
 
   const allInvoices = await prisma.invoice.findMany({
     where: { businessId: session.user.businessId },
+    include: {
+      lead: { select: { phone: true } },
+      job: { select: { customerPhone: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -158,6 +164,20 @@ export default async function InvoicesPage() {
               month: "short",
             });
 
+            const customerPhone = invoice.lead?.phone || invoice.job?.customerPhone || null;
+            const reminderUrl = customerPhone
+              ? buildInvoicePaymentReminderWhatsAppUrl({
+                  customerPhone,
+                  customerName: invoice.customerName,
+                  businessName,
+                  invoiceNumber: invoice.invoiceNumber,
+                  invoiceTotalFormatted: formatAmount(invoice.total, invoice.currency || businessCurrency),
+                  dueDateFormatted: dueDateStr,
+                  invoiceUrl: `/invoices/view/${invoice.id}`,
+                  isOverdue,
+                })
+              : null;
+
             return (
               <div
                 key={invoice.id}
@@ -187,9 +207,9 @@ export default async function InvoicesPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)] flex-wrap">
-                    <span>{invoice.customerEmail}</span>
+                    <span className="break-all">{invoice.customerEmail}</span>
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+                      <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
                       <span className={isOverdue ? "text-[var(--color-error)] font-medium" : ""}>
                         Due: {dueDateStr}
                       </span>
@@ -203,7 +223,7 @@ export default async function InvoicesPage() {
                 </div>
 
                 {/* Right: Amount & Action Link */}
-                <div className="flex items-center justify-between sm:justify-end gap-5 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)] shrink-0">
                   <div className="text-left sm:text-right">
                     <span className="font-mono text-lg font-bold text-[var(--color-text)] block">
                       {formatAmount(invoice.total, invoice.currency || businessCurrency)}
@@ -213,19 +233,34 @@ export default async function InvoicesPage() {
                     </span>
                   </div>
 
-                  <Link
-                    href={`/invoices/${invoice.id}`}
-                    className={`inline-flex items-center gap-1 px-3.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition-colors shadow-sm ${
-                      isDraft
-                        ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
-                        : isOverdue || isSent
-                        ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
-                        : "bg-[var(--color-surface-muted)] text-[var(--color-text)] hover:bg-[var(--color-border)]"
-                    }`}
-                  >
-                    <span>{isDraft ? "Review & send" : isOverdue || isSent ? "Manage & pay" : "View"}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {reminderUrl && (isOverdue || isSent) && (
+                      <a
+                        href={reminderUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors shadow-2xs"
+                        title="Send 1-click WhatsApp payment reminder to customer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="hidden md:inline">WhatsApp</span>
+                      </a>
+                    )}
+
+                    <Link
+                      href={`/invoices/${invoice.id}`}
+                      className={`inline-flex items-center gap-1 px-3.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition-colors shadow-sm ${
+                        isDraft
+                          ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
+                          : isOverdue || isSent
+                          ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
+                          : "bg-[var(--color-surface-muted)] text-[var(--color-text)] hover:bg-[var(--color-border)]"
+                      }`}
+                    >
+                      <span>{isDraft ? "Review & send" : isOverdue || isSent ? "Manage & pay" : "View"}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             );

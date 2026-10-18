@@ -80,6 +80,8 @@ export function QuoteDetailActions({
     try {
       const res = await fetch(`/api/quotes/${quoteId}/send`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: "email" }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -87,6 +89,56 @@ export function QuoteDetailActions({
         return;
       }
       setShowSendModal(false);
+
+      // (a) Send to Customer sends to both email and WhatsApp
+      if (customerPhone && origin) {
+        const waUrl = buildQuoteWhatsAppUrl({
+          customerPhone,
+          customerName,
+          businessName,
+          quoteTotalFormatted: totalFormatted,
+          quoteUrl: fullCustomerUrl,
+        });
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+      }
+
+      router.refresh();
+    } catch {
+      setErrorMsg("A network error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // (b) Send to WhatsApp sends only to WhatsApp, not email
+  async function handleSendWhatsAppOnly() {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      if (currentStatus === "DRAFT") {
+        const res = await fetch(`/api/quotes/${quoteId}/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channel: "whatsapp" }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setErrorMsg(data.error || "Failed to update quote status.");
+          return;
+        }
+      }
+
+      if (customerPhone && origin) {
+        const waUrl = buildQuoteWhatsAppUrl({
+          customerPhone,
+          customerName,
+          businessName,
+          quoteTotalFormatted: totalFormatted,
+          quoteUrl: fullCustomerUrl,
+        });
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+      }
+
       router.refresh();
     } catch {
       setErrorMsg("A network error occurred.");
@@ -201,24 +253,18 @@ export function QuoteDetailActions({
           </div>
         )}
 
-        {/* 1-Click Send via WhatsApp */}
+        {/* 1-Click Send via WhatsApp (Sends only on WhatsApp, marks as SENT if draft) */}
         {customerPhone && origin && (
-          <a
-            href={buildQuoteWhatsAppUrl({
-              customerPhone,
-              customerName,
-              businessName,
-              quoteTotalFormatted: totalFormatted,
-              quoteUrl: fullCustomerUrl,
-            })}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
-            title="Send quote to customer via WhatsApp"
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleSendWhatsAppOnly}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer disabled:opacity-60"
+            title="Send quote directly via WhatsApp without sending an email"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             <span>Send on WhatsApp</span>
-          </a>
+          </button>
         )}
 
         {/* Shareable Customer Link */}
@@ -266,10 +312,12 @@ export function QuoteDetailActions({
               Send quote to {customerName}?
             </h3>
 
-            <div className="bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] p-3 text-xs text-[var(--color-text-secondary)] space-y-1">
+            <div className="bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] p-3 text-xs text-[var(--color-text-secondary)] space-y-1.5">
               <div>Total amount: <strong className="font-semibold text-[var(--color-text)]">{totalFormatted}</strong></div>
-              <div>This will email an itemized quote and acceptance link to:</div>
-              <div className="font-medium text-[var(--color-primary)]">{customerEmail}</div>
+              <div>• <strong>Email:</strong> Itemized quote sent to <span className="font-medium text-[var(--color-primary)]">{customerEmail}</span></div>
+              {customerPhone && (
+                <div>• <strong>WhatsApp:</strong> Opens chat to send directly to <span className="font-medium text-emerald-700">{customerPhone}</span></div>
+              )}
             </div>
 
             <p className="text-xs text-[var(--color-text-muted)]">

@@ -36,6 +36,16 @@ export async function POST(
     return NextResponse.json({ error: "Quote not found" }, { status: 404 });
   }
 
+  let channel = "email";
+  try {
+    const body = await request.json();
+    if (body?.channel === "whatsapp") {
+      channel = "whatsapp";
+    }
+  } catch {
+    // No body or not JSON, default to email
+  }
+
   // Parse line items
   let lineItems: LineItem[] = [];
   try {
@@ -49,29 +59,39 @@ export async function POST(
   const acceptUrl = `${origin}/q/${quote.quoteToken}`;
   const quoteCurrency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
 
-  // Send email to customer
-  const emailRes = await sendEmail({
-    to: quote.lead.email,
-    replyTo: quote.business.email,
-    fromName: quote.business.name,
-    subject: `Quote from ${quote.business.name} — ${formatAmount(quote.total, quoteCurrency)}`,
-    html: quoteEmailHtml({
-      customerName: quote.lead.customerName,
-      businessName: quote.business.name,
-      lineItems,
-      totalPence: quote.total,
-      acceptUrl,
-      currency: quoteCurrency,
-    }),
-    text: quoteEmailText({
-      customerName: quote.lead.customerName,
-      businessName: quote.business.name,
-      lineItems,
-      totalPence: quote.total,
-      acceptUrl,
-      currency: quoteCurrency,
-    }),
-  });
+  let emailSuccess = false;
+  let emailError: string | null = null;
+
+  if (channel === "whatsapp") {
+    // WhatsApp only mode: skip email delivery
+    emailSuccess = true;
+  } else {
+    // Send email to customer
+    const emailRes = await sendEmail({
+      to: quote.lead.email,
+      replyTo: quote.business.email,
+      fromName: quote.business.name,
+      subject: `Quote from ${quote.business.name} — ${formatAmount(quote.total, quoteCurrency)}`,
+      html: quoteEmailHtml({
+        customerName: quote.lead.customerName,
+        businessName: quote.business.name,
+        lineItems,
+        totalPence: quote.total,
+        acceptUrl,
+        currency: quoteCurrency,
+      }),
+      text: quoteEmailText({
+        customerName: quote.lead.customerName,
+        businessName: quote.business.name,
+        lineItems,
+        totalPence: quote.total,
+        acceptUrl,
+        currency: quoteCurrency,
+      }),
+    });
+    emailSuccess = emailRes.success;
+    emailError = emailRes.error || null;
+  }
 
   // Update Quote record
   const updated = await prisma.quote.update({
@@ -98,13 +118,16 @@ export async function POST(
       quoteId: quote.id,
       entityType: "quote",
       entityId: quote.id,
-      eventType: emailRes.success ? "quote.sent" : "quote.send_failed",
-      status: emailRes.success ? "SUCCESS" : "FAILURE",
-      detail: emailRes.success
-        ? `Quote sent to ${quote.lead.email}`
-        : `Failed to send email: ${emailRes.error}`,
+      eventType: channel === "whatsapp" ? "quote.sent_whatsapp" : emailSuccess ? "quote.sent" : "quote.send_failed",
+      status: emailSuccess ? "SUCCESS" : "FAILURE",
+      detail:
+        channel === "whatsapp"
+          ? `Quote shared via WhatsApp with ${quote.lead.customerName} (${quote.lead.phone || "No phone number"})`
+          : emailSuccess
+          ? `Quote sent to ${quote.lead.email}`
+          : `Failed to send email: ${emailError}`,
     },
   });
 
-  return NextResponse.json({ ok: true, quote: updated });
+  return NextResponse.json({ ok: true, quote: updated, channel });
 }

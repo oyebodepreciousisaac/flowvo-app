@@ -5,6 +5,7 @@ import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decryptField } from "@/lib/security";
 import { formatAmount } from "@/lib/currency";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { PrintControls } from "./PrintControls";
 import { CheckCircle2, AlertCircle, Clock, ShieldCheck } from "lucide-react";
@@ -82,7 +83,7 @@ export default async function PrintableInvoicePage({ params }: PageProps) {
 
   const totalFormatted = formatAmount(invoice.total, currency);
   const subtotalFormatted = formatAmount(invoice.subtotal, currency);
-  const paymentDetailsDecrypted = decryptField(invoice.business.paymentDetails);
+  const bankDetails = parseBusinessBankDetails(invoice.business);
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] text-[#111827] print:bg-white print:text-black">
@@ -284,14 +285,27 @@ export default async function PrintableInvoicePage({ params }: PageProps) {
         {/* Real-World Payment Methods Section */}
         <section className="mt-6 pt-6 border-t-2 border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
           {/* Bank Transfer Instructions */}
-          <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-            <h3 className="font-bold text-xs uppercase tracking-wider text-gray-800 mb-2">
+          <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 space-y-2">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-gray-800">
               Bank Transfer Instructions
             </h3>
-            {paymentDetailsDecrypted ? (
-              <pre className="font-mono text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
-                {paymentDetailsDecrypted}
-              </pre>
+            {bankDetails.hasDetails ? (
+              <div className="space-y-2 text-xs">
+                {bankDetails.accountNumber ? (
+                  <div className="space-y-1 font-mono bg-white p-2.5 rounded border border-gray-200 text-xs">
+                    <p><span className="font-sans font-medium text-gray-500">Bank:</span> <strong className="text-gray-900">{bankDetails.bankName || "Official Settlement Bank"}</strong></p>
+                    <p><span className="font-sans font-medium text-gray-500">Account Number:</span> <strong className="text-emerald-700 font-bold">{bankDetails.accountNumber}</strong></p>
+                    {bankDetails.accountName && (
+                      <p><span className="font-sans font-medium text-gray-500">Account Name:</span> <strong className="text-gray-900">{bankDetails.accountName}</strong></p>
+                    )}
+                    <p><span className="font-sans font-medium text-gray-500">Reference:</span> <strong className="text-gray-900">{invoice.invoiceNumber}</strong></p>
+                  </div>
+                ) : null}
+
+                {bankDetails.notes && (
+                  <p className="text-gray-600 whitespace-pre-wrap break-words">{bankDetails.notes}</p>
+                )}
+              </div>
             ) : (
               <p className="text-gray-500 italic">
                 Please contact {invoice.business.name} at {invoice.business.email} for direct wire transfer instructions.

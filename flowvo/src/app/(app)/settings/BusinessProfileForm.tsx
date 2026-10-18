@@ -22,6 +22,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { SUPPORTED_COUNTRIES, SUPPORTED_CURRENCIES } from "@/lib/currency";
+import { cleanNotesText } from "@/lib/bank-details";
 
 interface BusinessProfileFormProps {
   initialBusiness: {
@@ -84,11 +85,14 @@ export function BusinessProfileForm({ initialBusiness }: BusinessProfileFormProp
   try {
     if (initialBusiness.paymentDetails && initialBusiness.paymentDetails.startsWith("{")) {
       initialBankDetails = { ...initialBankDetails, ...JSON.parse(initialBusiness.paymentDetails) };
+      if (initialBankDetails.notes) {
+        initialBankDetails.notes = cleanNotesText(initialBankDetails.notes) || "";
+      }
     } else if (initialBusiness.paymentDetails) {
-      initialBankDetails.notes = initialBusiness.paymentDetails;
+      initialBankDetails.notes = cleanNotesText(initialBusiness.paymentDetails) || "";
     }
   } catch {
-    initialBankDetails.notes = initialBusiness.paymentDetails || "";
+    initialBankDetails.notes = cleanNotesText(initialBusiness.paymentDetails) || "";
   }
 
   // Unified Bank Details for Customer Invoices

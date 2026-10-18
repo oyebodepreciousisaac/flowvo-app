@@ -6,6 +6,7 @@ import { LineItem } from "@/lib/email-templates/quote-email";
 import { formatAmount } from "@/lib/currency";
 import { getNextInvoiceNumber } from "@/lib/invoice";
 import { generateInvoicePaymentLink, processInvoicePaymentSuccess } from "@/lib/invoice-payment";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 import { QuoteAcceptanceCard, PaymentInfo } from "./QuoteAcceptanceCard";
 import { FileText, Phone, Mail, Calendar, ShieldCheck } from "lucide-react";
 
@@ -142,25 +143,12 @@ export default async function PublicQuotePage({ params, searchParams }: PageProp
     }
   }
 
-  // Parse bank details
-  let effectiveBankName = quote.business.bankName || "Official Settlement Bank";
-  let effectiveAccountNumber = quote.business.bankAccountNumber || "";
-  let effectiveAccountName = quote.business.bankAccountName || quote.business.name;
-  let effectiveNotes = "";
-
-  if (quote.business.paymentDetails && quote.business.paymentDetails.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(quote.business.paymentDetails);
-      effectiveBankName = parsed.bankName || effectiveBankName;
-      effectiveAccountNumber = parsed.accountNumber || effectiveAccountNumber;
-      effectiveAccountName = parsed.accountName || effectiveAccountName;
-      effectiveNotes = parsed.notes || "";
-    } catch {
-      // ignore
-    }
-  } else if (quote.business.paymentDetails) {
-    effectiveNotes = quote.business.paymentDetails;
-  }
+  // Parse bank details reliably
+  const bankDetails = parseBusinessBankDetails(quote.business);
+  const effectiveBankName = bankDetails.bankName || "Official Settlement Bank";
+  const effectiveAccountNumber = bankDetails.accountNumber || "";
+  const effectiveAccountName = bankDetails.accountName || quote.business.name;
+  const effectiveNotes = bankDetails.notes || "";
 
   // Parse submitted receipt proof if any
   const receiptLog = quote.activityLogs[0];

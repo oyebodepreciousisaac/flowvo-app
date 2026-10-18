@@ -24,10 +24,34 @@ export function quoteFollowUpHtml({
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
   <title>Following up on your quote from ${safeBusinessName}</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      body {
+        padding: 12px 8px !important;
+      }
+      .email-wrapper {
+        width: 100% !important;
+        padding: 20px 16px !important;
+        border-radius: 6px !important;
+      }
+      .cta-btn {
+        display: block !important;
+        width: 100% !important;
+        min-height: 48px !important;
+        line-height: 48px !important;
+        padding: 0 16px !important;
+        font-size: 16px !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+      }
+    }
+  </style>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1d1a; background-color: #f7f8f7; margin: 0; padding: 24px;">
-  <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px;">
+  <div class="email-wrapper" style="max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #d8dcdb; border-radius: 8px; padding: 32px; box-sizing: border-box;">
     <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #1a1d1a;">
       Following up on your quote
     </h2>
@@ -42,12 +66,12 @@ export function quoteFollowUpHtml({
     </p>
 
     <div style="text-align: center; margin: 32px 0 24px;">
-      <a href="${acceptUrl}" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 6px;">
-        Review & Accept Quote
+      <a href="${acceptUrl}" class="cta-btn" style="display: inline-block; background-color: #1e7a6a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 15px; font-weight: 700; border-radius: 6px; box-sizing: border-box;">
+        Review &amp; Accept Quote
       </a>
     </div>
 
-    <p style="margin: 0; font-size: 13px; color: #7a8580; text-align: center;">
+    <p style="margin: 0; font-size: 13px; color: #7a8580; text-align: center; line-height: 1.5;">
       If you need any adjustments or have decided not to proceed, simply reply to let us know.
     </p>
   </div>

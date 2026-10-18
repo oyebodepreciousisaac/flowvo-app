@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { isSameOrigin, decryptField } from "@/lib/security";
 import { invoiceEmailHtml, invoiceEmailText } from "@/lib/email-templates/invoice-email";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { formatAmount } from "@/lib/currency";
 import { initializePaystackTransaction, getEffectivePaystackSecretKey } from "@/lib/paystack";
@@ -108,6 +109,16 @@ export async function POST(
     }
   }
 
+  let channel = "email";
+  try {
+    const body = await request.json();
+    if (body?.channel === "whatsapp") {
+      channel = "whatsapp";
+    }
+  } catch {
+    // No body or not JSON, default to email
+  }
+
   let lineItems: LineItem[] = [];
   try {
     lineItems = JSON.parse(invoice.lineItems);
@@ -118,37 +129,48 @@ export async function POST(
   const formattedTotal = formatAmount(invoice.total, currency);
   const viewInvoiceUrl = `${origin}/invoices/view/${invoice.id}`;
 
-  // Send email
-  const emailRes = await sendEmail({
-    to: invoice.customerEmail,
-    replyTo: invoice.business.email,
-    fromName: invoice.business.name,
-    subject: `Invoice ${invoice.invoiceNumber} from ${invoice.business.name} — ${formattedTotal}`,
-    html: invoiceEmailHtml({
-      invoiceNumber: invoice.invoiceNumber,
-      customerName: invoice.customerName,
-      businessName: invoice.business.name,
-      lineItems,
-      totalPence: invoice.total,
-      dueDate: invoice.dueDate,
-      paymentDetails: decryptField(invoice.business.paymentDetails),
-      currency,
-      paymentLinkUrl,
-      viewInvoiceUrl,
-    }),
-    text: invoiceEmailText({
-      invoiceNumber: invoice.invoiceNumber,
-      customerName: invoice.customerName,
-      businessName: invoice.business.name,
-      lineItems,
-      totalPence: invoice.total,
-      dueDate: invoice.dueDate,
-      paymentDetails: decryptField(invoice.business.paymentDetails),
-      currency,
-      paymentLinkUrl,
-      viewInvoiceUrl,
-    }),
-  });
+  const bankDetails = parseBusinessBankDetails(invoice.business);
+
+  let emailSuccess = false;
+  let emailError: string | null = null;
+
+  if (channel === "whatsapp") {
+    emailSuccess = true;
+  } else {
+    // Send email
+    const emailRes = await sendEmail({
+      to: invoice.customerEmail,
+      replyTo: invoice.business.email,
+      fromName: invoice.business.name,
+      subject: `Invoice ${invoice.invoiceNumber} from ${invoice.business.name} — ${formattedTotal}`,
+      html: invoiceEmailHtml({
+        invoiceNumber: invoice.invoiceNumber,
+        customerName: invoice.customerName,
+        businessName: invoice.business.name,
+        lineItems,
+        totalPence: invoice.total,
+        dueDate: invoice.dueDate,
+        paymentDetails: bankDetails.formattedDisplay || null,
+        currency,
+        paymentLinkUrl,
+        viewInvoiceUrl,
+      }),
+      text: invoiceEmailText({
+        invoiceNumber: invoice.invoiceNumber,
+        customerName: invoice.customerName,
+        businessName: invoice.business.name,
+        lineItems,
+        totalPence: invoice.total,
+        dueDate: invoice.dueDate,
+        paymentDetails: bankDetails.formattedDisplay || null,
+        currency,
+        paymentLinkUrl,
+        viewInvoiceUrl,
+      }),
+    });
+    emailSuccess = emailRes.success;
+    emailError = emailRes.error || null;
+  }
 
   // Update status and payment links in DB
   const updatedInvoice = await prisma.invoice.update({
@@ -156,7 +178,7 @@ export async function POST(
     data: {
       status: "SENT",
       sentAt: new Date(),
-      emailDeliveryStatus: emailRes.success ? "DELIVERED" : "PENDING",
+      emailDeliveryStatus: channel === "whatsapp" ? "NOT_SENT" : emailSuccess ? "DELIVERED" : "PENDING",
       currency,
       ...(paymentLinkUrl ? { paymentLinkUrl } : {}),
       ...(paymentReference ? { paymentReference } : {}),
@@ -174,13 +196,16 @@ export async function POST(
       invoiceId: invoice.id,
       entityType: "invoice",
       entityId: invoice.id,
-      eventType: emailRes.success ? "invoice.sent" : "invoice.send_failed",
-      status: emailRes.success ? "SUCCESS" : "FAILURE",
-      detail: emailRes.success
-        ? `Invoice ${invoice.invoiceNumber} sent to ${invoice.customerEmail} (${formattedTotal})${paymentLinkUrl ? " with online payment link" : ""}`
-        : `Email delivery failed: ${emailRes.error}`,
+      eventType: channel === "whatsapp" ? "invoice.sent_whatsapp" : emailSuccess ? "invoice.sent" : "invoice.send_failed",
+      status: emailSuccess ? "SUCCESS" : "FAILURE",
+      detail:
+        channel === "whatsapp"
+          ? `Invoice ${invoice.invoiceNumber} shared via WhatsApp with customer (${formattedTotal})`
+          : emailSuccess
+          ? `Invoice ${invoice.invoiceNumber} sent to ${invoice.customerEmail} (${formattedTotal})${paymentLinkUrl ? " with online payment link" : ""}`
+          : `Email delivery failed: ${emailError}`,
     },
   });
 
-  return NextResponse.json({ ok: true, invoice: updatedInvoice });
+  return NextResponse.json({ ok: true, invoice: updatedInvoice, channel });
 }

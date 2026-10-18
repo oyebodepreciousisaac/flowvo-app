@@ -8,6 +8,7 @@ import { ActivityTimeline } from "@/components/ActivityTimeline";
 import { formatAmount } from "@/lib/currency";
 import { LineItem } from "@/lib/email-templates/quote-email";
 import { decryptField } from "@/lib/security";
+import { parseBusinessBankDetails } from "@/lib/bank-details";
 import { InvoiceDetailActions } from "./InvoiceDetailActions";
 import { ArrowLeft, Mail, Calendar, Briefcase, FileText, Globe, ExternalLink, Printer } from "lucide-react";
 
@@ -86,6 +87,8 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     minute: "2-digit",
   });
 
+  const bankDetails = parseBusinessBankDetails(invoice.business);
+
   return (
     <div className="space-y-6">
       {/* Back button & quick print */}
@@ -140,12 +143,12 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
               )}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[var(--color-text-secondary)]">
-              <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                <span>{invoice.customerEmail}</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Mail className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
+                <span className="break-all">{invoice.customerEmail}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)] shrink-0" />
                 <span>Due: {dueDateFormatted}</span>
               </div>
               {invoice.job && (
@@ -263,11 +266,39 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
           </div>
 
           {/* Payment Instructions Card */}
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-3">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-card)] space-y-4">
             <h2 className="text-base font-semibold text-[var(--color-text)]">Direct Bank Payment Instructions</h2>
-            {invoice.business.paymentDetails ? (
-              <div className="p-4 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs font-mono text-[var(--color-text)] whitespace-pre-wrap leading-relaxed">
-                {decryptField(invoice.business.paymentDetails)}
+            {bankDetails.hasDetails ? (
+              <div className="space-y-3">
+                {bankDetails.accountNumber ? (
+                  <div className="p-4 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs space-y-2 font-mono">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                      <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">Bank</span>
+                      <span className="font-bold text-[var(--color-text)] sm:text-right break-words min-w-0">{bankDetails.bankName || "Official Settlement Bank"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                      <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">Account Number</span>
+                      <span className="font-bold text-[var(--color-primary)] text-sm tracking-wider sm:text-right shrink-0">{bankDetails.accountNumber}</span>
+                    </div>
+                    {bankDetails.accountName && (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                        <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">Account Name</span>
+                        <span className="font-medium text-[var(--color-text)] sm:text-right break-words min-w-0">{bankDetails.accountName}</span>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 py-1.5 min-w-0">
+                      <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">Payment Reference</span>
+                      <span className="font-bold text-[var(--color-text)] sm:text-right shrink-0">{invoice.invoiceNumber}</span>
+                    </div>
+                  </div>
+                ) : null}
+
+                {bankDetails.notes && (
+                  <div className="p-3.5 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden">
+                    <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Payment Instructions</span>
+                    <p className="whitespace-pre-wrap">{bankDetails.notes}</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-4 bg-[var(--color-status-action)] text-[#8C5A00] rounded-[var(--radius-md)] border border-[#edd7a6] text-xs">
@@ -288,51 +319,51 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
               Invoice Summary
             </h3>
-            <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                <span className="text-[var(--color-text-secondary)]">Invoice Number</span>
-                <span className="font-mono font-semibold text-[var(--color-text)]">
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                <span className="shrink-0 text-[var(--color-text-secondary)]">Invoice Number</span>
+                <span className="font-mono font-semibold text-[var(--color-text)] truncate text-right">
                   {invoice.invoiceNumber}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                <span className="text-[var(--color-text-secondary)]">Issue Date &amp; Time</span>
-                <span className="text-[var(--color-text)] font-medium">
-                  {issueDateFormatted} at {issueTimeFormatted}
+              <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                <span className="shrink-0 text-[var(--color-text-secondary)]">Issue Date</span>
+                <span className="text-[var(--color-text)] font-medium text-right truncate">
+                  {issueDateFormatted}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                <span className="text-[var(--color-text-secondary)]">Currency</span>
-                <span className="font-mono font-semibold text-[var(--color-text)]">
+              <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                <span className="shrink-0 text-[var(--color-text-secondary)]">Currency</span>
+                <span className="font-mono font-semibold text-[var(--color-text)] text-right">
                   {currency}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                <span className="text-[var(--color-text-secondary)]">Payment Due</span>
-                <span className="font-medium text-[var(--color-text)]">
+              <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                <span className="shrink-0 text-[var(--color-text-secondary)]">Payment Due</span>
+                <span className="font-medium text-[var(--color-text)] text-right truncate">
                   {dueDateFormatted}
                 </span>
               </div>
               {invoice.sentAt && (
-                <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                  <span className="text-[var(--color-text-secondary)]">Sent Date</span>
-                  <span className="text-[var(--color-text)]">
+                <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-secondary)]">Sent Date</span>
+                  <span className="text-[var(--color-text)] text-right truncate">
                     {new Date(invoice.sentAt).toLocaleDateString("en-GB")}
                   </span>
                 </div>
               )}
               {invoice.paidAt && (
-                <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                  <span className="text-[var(--color-text-secondary)]">Paid Date</span>
-                  <span className="font-semibold text-[var(--color-primary)]">
+                <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-secondary)]">Paid Date</span>
+                  <span className="font-semibold text-[var(--color-primary)] text-right truncate">
                     {new Date(invoice.paidAt).toLocaleDateString("en-GB")}
                   </span>
                 </div>
               )}
               {invoice.paymentReference && (
-                <div className="flex justify-between py-1 border-b border-[var(--color-border)]">
-                  <span className="text-[var(--color-text-secondary)]">Gateway Reference</span>
-                  <span className="font-mono text-[var(--color-text)] text-[11px] truncate max-w-[150px]" title={invoice.paymentReference}>
+                <div className="flex items-center justify-between gap-2 py-1.5 border-b border-[var(--color-border)] min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-secondary)]">Gateway Reference</span>
+                  <span className="font-mono text-[var(--color-text)] text-[11px] truncate max-w-[140px] text-right" title={invoice.paymentReference}>
                     {invoice.paymentReference}
                   </span>
                 </div>

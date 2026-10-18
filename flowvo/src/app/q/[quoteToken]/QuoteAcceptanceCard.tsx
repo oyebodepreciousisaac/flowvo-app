@@ -22,6 +22,7 @@ import {
 import { useRouter } from "next/navigation";
 import { broadcastLiveEvent } from "@/lib/live-channel";
 import { buildCustomerPaymentProofWhatsAppUrl } from "@/lib/whatsapp";
+import { cleanNotesText } from "@/lib/bank-details";
 
 export interface PaymentInfo {
   invoiceId?: string | null;
@@ -391,23 +392,24 @@ export function QuoteAcceptanceCard({
                   </div>
 
                   {paymentInfo?.bankAccountNumber ? (
-                    <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
+                    <>
+                      <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
                       {/* Bank Name */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
-                        <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                        <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                           Settlement Bank
                         </span>
-                        <span className="font-bold text-[var(--color-text)] text-sm">
+                        <span className="font-bold text-[var(--color-text)] text-sm sm:text-right break-words min-w-0">
                           {paymentInfo.bankName || "Official Settlement Bank"}
                         </span>
                       </div>
 
                       {/* Account Number with 1-Click Copy */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)]">
-                        <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                        <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                           Account Number
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <span className="text-lg font-extrabold text-[var(--color-primary)] tracking-wider">
                             {paymentInfo.bankAccountNumber}
                           </span>
@@ -434,22 +436,22 @@ export function QuoteAcceptanceCard({
 
                       {/* Account Name */}
                       {paymentInfo.bankAccountName && (
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
-                          <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                          <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                             Account Name
                           </span>
-                          <span className="font-semibold text-[var(--color-text)]">
+                          <span className="font-semibold text-[var(--color-text)] sm:text-right break-words min-w-0">
                             {paymentInfo.bankAccountName}
                           </span>
                         </div>
                       )}
 
                       {/* Payment Reference with Copy */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                        <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 min-w-0">
+                        <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                           Payment Reference
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0 sm:text-right">
                           <span className="font-bold text-[var(--color-text)]">
                             {invoiceNumber}
                           </span>
@@ -468,15 +470,28 @@ export function QuoteAcceptanceCard({
                         </div>
                       </div>
                     </div>
-                  ) : paymentInfo?.paymentNotes ? (
-                    <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-mono whitespace-pre-wrap text-[var(--color-text)] leading-relaxed">
-                      {paymentInfo.paymentNotes}
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
-                      Please contact {businessName} directly for bank settlement account details.
-                    </div>
-                  )}
+
+                    {cleanNotesText(paymentInfo?.paymentNotes) && (
+                      <div className="p-3 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden font-sans space-y-1">
+                        <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
+                          Payment Instructions
+                        </span>
+                        <p className="whitespace-pre-wrap">{cleanNotesText(paymentInfo?.paymentNotes)}</p>
+                      </div>
+                    )}
+                  </>
+                ) : cleanNotesText(paymentInfo?.paymentNotes) ? (
+                  <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-sans text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden space-y-1">
+                    <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
+                      Payment Instructions
+                    </span>
+                    <p className="whitespace-pre-wrap">{cleanNotesText(paymentInfo?.paymentNotes)}</p>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                    Please contact {businessName} directly for bank settlement account details.
+                  </div>
+                )}
 
                   {/* Section: Confirm Money Sent / Send Receipt */}
                   <div className="pt-4 border-t border-[var(--color-border)] space-y-4">

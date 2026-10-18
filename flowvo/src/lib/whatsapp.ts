@@ -130,3 +130,68 @@ export function buildOwnerAlertWhatsAppUrl({
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
+
+export function buildInvoicePaymentReminderWhatsAppUrl({
+  customerPhone,
+  customerName,
+  businessName,
+  invoiceNumber,
+  invoiceTotalFormatted,
+  dueDateFormatted,
+  invoiceUrl,
+  isOverdue = false,
+}: {
+  customerPhone: string;
+  customerName: string;
+  businessName: string;
+  invoiceNumber: string;
+  invoiceTotalFormatted: string;
+  dueDateFormatted: string;
+  invoiceUrl: string;
+  isOverdue?: boolean;
+}): string {
+  const phone = cleanPhoneForWhatsApp(customerPhone);
+  const firstName = customerName.split(" ")[0] || customerName;
+
+  const intro = isOverdue
+    ? `Hi ${firstName} 👋, this is a quick friendly reminder that invoice *${invoiceNumber}* for *${invoiceTotalFormatted}* from *${businessName}* was due on *${dueDateFormatted}*.`
+    : `Hi ${firstName} 👋, this is a friendly reminder that invoice *${invoiceNumber}* for *${invoiceTotalFormatted}* from *${businessName}* is due on *${dueDateFormatted}*.`;
+
+  const text = `${intro}
+
+💳 *To view or complete payment online or via bank transfer*, click here:
+${invoiceUrl}
+
+If you have already made this payment, kindly disregard this note or send through your receipt so we can confirm it. Thank you! 🙏`;
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}
+
+export function buildOwnerPaymentNotificationWhatsAppUrl({
+  ownerPhone,
+  customerName,
+  invoiceNumber,
+  amountFormatted,
+  paymentMethod,
+  paymentReference,
+  viewInvoiceUrl,
+}: {
+  ownerPhone: string;
+  customerName: string;
+  invoiceNumber: string;
+  amountFormatted: string;
+  paymentMethod: string;
+  paymentReference?: string | null;
+  viewInvoiceUrl?: string;
+}): string {
+  const phone = cleanPhoneForWhatsApp(ownerPhone);
+
+  const text = `🎉 *Payment Confirmed!*
+
+Customer: *${customerName}*
+Invoice: *${invoiceNumber}*
+Amount: *${amountFormatted}*
+Method: *${paymentMethod}*${paymentReference ? `\nReference: *${paymentReference}*` : ""}${viewInvoiceUrl ? `\n\nView Invoice: ${viewInvoiceUrl}` : ""}`;
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+}

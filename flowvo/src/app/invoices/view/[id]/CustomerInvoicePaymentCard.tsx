@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { buildCustomerPaymentProofWhatsAppUrl } from "@/lib/whatsapp";
 
+import { cleanNotesText } from "@/lib/bank-details";
+
 interface CustomerInvoicePaymentCardProps {
   invoiceId: string;
   invoiceNumber: string;
@@ -67,17 +69,20 @@ export function CustomerInvoicePaymentCard({
   let effectiveBankName = bankName;
   let effectiveAccountNumber = bankAccountNumber;
   let effectiveAccountName = bankAccountName;
-  let effectiveNotes = paymentDetailsNotes;
+  let effectiveNotes: string | null = cleanNotesText(paymentDetailsNotes);
 
-  if (!effectiveAccountNumber && paymentDetailsNotes && paymentDetailsNotes.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(paymentDetailsNotes);
-      effectiveBankName = parsed.bankName || effectiveBankName;
-      effectiveAccountNumber = parsed.accountNumber || effectiveAccountNumber;
-      effectiveAccountName = parsed.accountName || effectiveAccountName;
-      effectiveNotes = parsed.notes || "";
-    } catch {
-      // ignore
+  if (paymentDetailsNotes) {
+    const trimmed = paymentDetailsNotes.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        effectiveBankName = parsed.bankName || effectiveBankName;
+        effectiveAccountNumber = parsed.accountNumber || effectiveAccountNumber;
+        effectiveAccountName = parsed.accountName || effectiveAccountName;
+        effectiveNotes = cleanNotesText(parsed.notes || "");
+      } catch {
+        effectiveNotes = cleanNotesText(trimmed);
+      }
     }
   }
 
@@ -246,23 +251,24 @@ export function CustomerInvoicePaymentCard({
             </div>
 
             {effectiveAccountNumber ? (
-              <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
+              <>
+                <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] space-y-3.5 font-mono text-xs">
                 {/* Bank Name */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
-                  <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Bank Name
                   </span>
-                  <span className="font-bold text-[var(--color-text)] text-sm">
+                  <span className="font-bold text-[var(--color-text)] text-sm sm:text-right break-words min-w-0">
                     {effectiveBankName || "Official Settlement Bank"}
                   </span>
                 </div>
 
                 {/* Account Number with 1-Click Copy */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)]">
-                  <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Account Number
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <span className="text-lg font-extrabold text-[var(--color-primary)] tracking-wider">
                       {effectiveAccountNumber}
                     </span>
@@ -289,22 +295,22 @@ export function CustomerInvoicePaymentCard({
 
                 {/* Account Name */}
                 {effectiveAccountName && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2.5 border-b border-[var(--color-border)]">
-                    <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 pb-2.5 border-b border-[var(--color-border)] min-w-0">
+                    <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                       Account Name
                     </span>
-                    <span className="font-semibold text-[var(--color-text)]">
+                    <span className="font-semibold text-[var(--color-text)] sm:text-right break-words min-w-0">
                       {effectiveAccountName}
                     </span>
                   </div>
                 )}
 
                 {/* Payment Reference */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 min-w-0">
+                  <span className="shrink-0 text-[var(--color-text-muted)] font-sans uppercase text-[10px] tracking-wider font-semibold">
                     Payment Reference
                   </span>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0 sm:text-right">
                     <span className="font-bold text-[var(--color-text)]">
                       {invoiceNumber}
                     </span>
@@ -323,15 +329,28 @@ export function CustomerInvoicePaymentCard({
                   </div>
                 </div>
               </div>
-            ) : effectiveNotes ? (
-              <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-mono whitespace-pre-wrap text-[var(--color-text)] leading-relaxed">
-                {effectiveNotes}
-              </div>
-            ) : (
-              <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
-                Please contact {businessName} directly for bank settlement instructions.
-              </div>
-            )}
+
+              {effectiveNotes && (
+                <div className="p-3 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden font-sans space-y-1">
+                  <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
+                    Payment Instructions
+                  </span>
+                  <p className="whitespace-pre-wrap">{effectiveNotes}</p>
+                </div>
+              )}
+            </>
+          ) : effectiveNotes ? (
+            <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs font-sans text-[var(--color-text-secondary)] leading-relaxed break-words overflow-hidden space-y-1">
+              <span className="block font-semibold text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
+                Payment Instructions
+              </span>
+              <p className="whitespace-pre-wrap">{effectiveNotes}</p>
+            </div>
+          ) : (
+            <div className="p-4 rounded-[var(--radius-md)] bg-amber-50 border border-amber-200 text-xs text-amber-900">
+              Please contact {businessName} directly for bank settlement instructions.
+            </div>
+          )}
 
             {/* Step 2: Confirm on WhatsApp */}
             {whatsappProofUrl && (

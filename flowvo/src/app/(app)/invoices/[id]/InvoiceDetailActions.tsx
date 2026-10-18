@@ -15,7 +15,7 @@ import {
   MessageCircle,
   Eye,
 } from "lucide-react";
-import { buildInvoiceWhatsAppUrl } from "@/lib/whatsapp";
+import { buildInvoiceWhatsAppUrl, buildInvoicePaymentReminderWhatsAppUrl } from "@/lib/whatsapp";
 
 interface InvoiceDetailActionsProps {
   invoiceId: string;
@@ -81,12 +81,15 @@ export function InvoiceDetailActions({
     setTimeout(() => setCopiedLink(false), 2500);
   }
 
+  // (a) Send to Customer: sends email AND opens WhatsApp if phone exists
   async function handleSendInvoice() {
     setLoading(true);
     setErrorMsg(null);
     try {
       const res = await fetch(`/api/invoices/${invoiceId}/send`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: "email" }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -94,6 +97,41 @@ export function InvoiceDetailActions({
         return;
       }
       setShowSendModal(false);
+
+      if (whatsappUrl) {
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      }
+
+      router.refresh();
+    } catch {
+      setErrorMsg("A network error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // (b) Send to WhatsApp: sends only to WhatsApp, not email
+  async function handleSendWhatsAppOnly() {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      if (currentStatus === "DRAFT") {
+        const res = await fetch(`/api/invoices/${invoiceId}/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channel: "whatsapp" }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setErrorMsg(data.error || "Failed to update invoice status.");
+          return;
+        }
+      }
+
+      if (whatsappUrl) {
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      }
+
       router.refresh();
     } catch {
       setErrorMsg("A network error occurred. Please try again.");
@@ -185,17 +223,40 @@ export function InvoiceDetailActions({
           <span>Print / PDF</span>
         </Link>
 
-        {/* 1-Click Send on WhatsApp */}
+        {/* 1-Click Send on WhatsApp (Sends only on WhatsApp, marks as SENT if draft) */}
         {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
-            title="Open WhatsApp with pre-filled invoice message and customer payment link"
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleSendWhatsAppOnly}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+            title="Send invoice directly via WhatsApp without sending an email"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             <span>Send on WhatsApp</span>
+          </button>
+        )}
+
+        {/* 1-Click Payment Reminder via WhatsApp for Sent/Overdue Invoices */}
+        {(currentStatus === "SENT" || currentStatus === "OVERDUE") && customerPhone && (
+          <a
+            href={buildInvoicePaymentReminderWhatsAppUrl({
+              customerPhone,
+              customerName,
+              businessName,
+              invoiceNumber,
+              invoiceTotalFormatted: totalFormatted,
+              dueDateFormatted,
+              invoiceUrl: publicInvoiceUrl,
+              isOverdue: currentStatus === "OVERDUE",
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-semibold rounded-[var(--radius-md)] transition-colors shadow-sm cursor-pointer"
+            title="Send polite WhatsApp payment reminder to customer"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Send WhatsApp Reminder</span>
           </a>
         )}
 
@@ -274,20 +335,13 @@ export function InvoiceDetailActions({
               <h3 className="text-base font-bold text-[var(--color-text)]">
                 Send invoice {invoiceNumber}
               </h3>
-              <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                This will send an itemized invoice email for{" "}
-                <strong className="text-[var(--color-text)]">{totalFormatted}</strong> to{" "}
-                <strong className="text-[var(--color-text)]">{customerEmail}</strong>.
-              </p>
-              <div className="mt-3 p-3 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs space-y-1">
-                <div>
-                  <span className="text-[var(--color-text-muted)]">Customer:</span>{" "}
-                  <span className="font-semibold text-[var(--color-text)]">{customerName}</span>
-                </div>
-                <div>
-                  <span className="text-[var(--color-text-muted)]">Payment due:</span>{" "}
-                  <span className="font-semibold text-[var(--color-text)]">{dueDateFormatted}</span>
-                </div>
+              <div className="mt-3 p-3 bg-[var(--color-surface-muted)] rounded-[var(--radius-md)] border border-[var(--color-border)] text-xs space-y-1.5">
+                <div>Total amount: <strong className="font-semibold text-[var(--color-text)]">{totalFormatted}</strong></div>
+                <div>• <strong>Email:</strong> Itemized invoice sent to <span className="font-semibold text-[var(--color-text)]">{customerEmail}</span></div>
+                {customerPhone && (
+                  <div>• <strong>WhatsApp:</strong> Opens chat to send directly to <span className="font-semibold text-emerald-700">{customerPhone}</span></div>
+                )}
+                <div>• <strong>Payment due:</strong> <span className="font-semibold text-[var(--color-text)]">{dueDateFormatted}</span></div>
               </div>
             </div>
 
