@@ -8,7 +8,7 @@ import { formatAmount, calculateMultiCurrencyTotals, convertCurrency } from "@/l
 import { FileText, ArrowRight, AlertTriangle, CheckCircle2, Calendar, MessageCircle, Coins } from "lucide-react";
 import { buildInvoicePaymentReminderWhatsAppUrl } from "@/lib/whatsapp";
 
-export const metadata: Metadata = { title: "Invoices — Flowvo" };
+export const metadata: Metadata = { title: "Invoices — Settlevo" };
 
 export default async function InvoicesPage() {
   const session = await getCurrentSession();
@@ -21,7 +21,7 @@ export default async function InvoicesPage() {
     select: { currency: true, name: true, phone: true, notificationPhone: true },
   });
   const businessCurrency = business?.currency || "NGN";
-  const businessName = business?.name || "Flowvo Business";
+  const businessName = business?.name || "Settlevo Business";
 
   const allInvoices = await prisma.invoice.findMany({
     where: { businessId: session.user.businessId },

@@ -17,7 +17,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const session = await getCurrentSession();
-  if (!session) return { title: "Job Details — Flowvo" };
+  if (!session) return { title: "Job Details — Settlevo" };
 
   const job = await prisma.job.findFirst({
     where: { id, businessId: session.user.businessId },
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   return {
-    title: job ? `Job: ${job.customerName} — Flowvo` : "Job Details — Flowvo",
+    title: job ? `Job: ${job.customerName} — Settlevo` : "Job Details — Settlevo",
   };
 }
 

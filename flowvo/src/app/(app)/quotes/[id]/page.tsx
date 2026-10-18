@@ -17,7 +17,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const session = await getCurrentSession();
-  if (!session) return { title: "Quote Details — Flowvo" };
+  if (!session) return { title: "Quote Details — Settlevo" };
 
   const quote = await prisma.quote.findFirst({
     where: { id, businessId: session.user.businessId },
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   return {
-    title: quote ? `Quote: ${quote.lead.customerName} — Flowvo` : "Quote Details — Flowvo",
+    title: quote ? `Quote: ${quote.lead.customerName} — Settlevo` : "Quote Details — Settlevo",
   };
 }
 

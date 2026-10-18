@@ -17,8 +17,9 @@ describe("Slice 2: Email Templates", () => {
     expect(html).toContain("Hi David,");
     expect(html).toContain("Apex Plumbing &amp; Heating");
     expect(html).toContain("Boiler Installation");
-    // Spec requirement: No Flowvo branding in email body
+    // Spec requirement: No platform branding in email body (white-label)
     expect(html).not.toContain("Flowvo");
+    expect(html).not.toContain("Settlevo");
   });
 
   it("generates plain-text fallback acknowledgement matching HTML details", () => {
@@ -31,8 +32,9 @@ describe("Slice 2: Email Templates", () => {
     expect(text).toContain("Hi Sarah,");
     expect(text).toContain("Elite Electrics");
     expect(text).toContain("Consumer Unit Upgrade");
-    // Spec requirement: No Flowvo branding in email body
+    // Spec requirement: No platform branding in email body (white-label)
     expect(text).not.toContain("Flowvo");
+    expect(text).not.toContain("Settlevo");
   });
 });
 

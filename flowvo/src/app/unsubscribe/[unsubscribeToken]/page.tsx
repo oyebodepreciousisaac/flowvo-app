@@ -7,7 +7,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Unsubscribe from Review Requests — Flowvo",
+  title: "Unsubscribe from Review Requests — Settlevo",
 };
 
 export default async function UnsubscribePage({ params }: PageProps) {

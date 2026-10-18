@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
   const verifiedAccountName = resolveRes.accountName;
 
-  // 2. Create Paystack Subaccount under Flowvo Master Account
+  // 2. Create Paystack Subaccount under Settlevo Master Account
   let subaccountCode: string | null = null;
   try {
     const subRes = await createPaystackSubaccount({

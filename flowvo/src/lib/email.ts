@@ -14,7 +14,7 @@ export async function sendEmail({
   subject,
   html,
   text,
-  fromName = "Flowvo",
+  fromName = "Settlevo",
   replyTo,
 }: SendEmailOptions): Promise<{ success: boolean; id?: string; error?: string }> {
   const stagingOverride = process.env.STAGING_EMAIL_OVERRIDE;
@@ -56,7 +56,7 @@ export async function sendEmail({
 
   // ─── 2. Resend API ────────────────────────────────────────────────────────────
   const resendApiKey = process.env.RESEND_API_KEY;
-  const emailFrom = process.env.EMAIL_FROM || (process.env.EMAIL_FROM_DOMAIN ? `"${fromName}" <noreply@${process.env.EMAIL_FROM_DOMAIN}>` : "Flowvo <onboarding@resend.dev>");
+  const emailFrom = process.env.EMAIL_FROM || (process.env.EMAIL_FROM_DOMAIN ? `"${fromName}" <noreply@${process.env.EMAIL_FROM_DOMAIN}>` : "Settlevo <onboarding@resend.dev>");
 
   // In test environment or if no real key provided, simulate sending
   if (!resendApiKey || resendApiKey === "re_dev_placeholder" || process.env.NODE_ENV === "test") {

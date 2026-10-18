@@ -42,7 +42,7 @@ export function InvoiceDetailActions({
   customerName,
   customerEmail,
   customerPhone,
-  businessName = "Flowvo Business",
+  businessName = "Settlevo Business",
   totalFormatted,
   currentStatus,
   emailDeliveryStatus,

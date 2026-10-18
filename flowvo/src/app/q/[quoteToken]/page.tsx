@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     include: { business: true },
   });
 
-  if (!quote) return { title: "Quote — Flowvo" };
+  if (!quote) return { title: "Quote — Settlevo" };
 
   const currency = (quote.currency || quote.business.currency || "NGN").toUpperCase();
   const formattedTotal = formatAmount(quote.total, currency);
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: "website",
-      siteName: "Flowvo",
+      siteName: "Settlevo",
     },
     twitter: {
       card: "summary",
@@ -341,7 +341,7 @@ export default async function PublicQuotePage({ params, searchParams }: PageProp
         {/* Trust & Guarantee note */}
         <div className="flex items-center justify-center gap-2 text-xs text-[var(--color-text-muted)] text-center">
           <ShieldCheck className="w-4 h-4 text-[var(--color-primary)]" />
-          <span>Secure quote provided through Flowvo operations system.</span>
+          <span>Secure quote provided through Settlevo operations system.</span>
         </div>
       </div>
     </div>

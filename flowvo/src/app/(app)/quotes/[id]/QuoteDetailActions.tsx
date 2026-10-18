@@ -26,7 +26,7 @@ export function QuoteDetailActions({
   customerName,
   customerEmail,
   customerPhone,
-  businessName = "Flowvo Business",
+  businessName = "Settlevo Business",
   totalFormatted,
   currentStatus,
   invoiceId,

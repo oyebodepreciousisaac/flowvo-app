@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     include: { business: true },
   });
 
-  if (!invoice) return { title: "Invoice — Flowvo" };
+  if (!invoice) return { title: "Invoice — Settlevo" };
 
   const currency = (invoice.currency || invoice.business.currency || "NGN").toUpperCase();
   return {
@@ -354,7 +354,7 @@ export default async function PublicInvoiceViewPage({ params, searchParams }: Pa
 
         {/* Footer */}
         <div className="text-center text-xs text-[var(--color-text-muted)] py-4">
-          <p>Powered by Flowvo • Secure &amp; Verified Invoice System</p>
+          <p>Powered by Settlevo • Secure &amp; Verified Invoice System</p>
         </div>
 
       </div>

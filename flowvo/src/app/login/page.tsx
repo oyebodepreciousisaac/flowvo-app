@@ -108,9 +108,9 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-2xl shadow-sm">
-            F
+            S
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Flowvo</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Settlevo</h1>
           <p className="text-sm text-[var(--color-text-secondary)] text-center">
             Sign in to your business account
           </p>

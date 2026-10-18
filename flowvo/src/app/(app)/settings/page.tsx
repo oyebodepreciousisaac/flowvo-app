@@ -6,7 +6,7 @@ import { decryptField } from "@/lib/security";
 import { BusinessProfileForm } from "./BusinessProfileForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
-export const metadata: Metadata = { title: "Settings — Flowvo" };
+export const metadata: Metadata = { title: "Settings — Settlevo" };
 
 export default async function SettingsPage() {
   const session = await getCurrentSession();

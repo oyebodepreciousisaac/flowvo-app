@@ -19,7 +19,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const session = await getCurrentSession();
-  if (!session) return { title: "Invoice Details — Flowvo" };
+  if (!session) return { title: "Invoice Details — Settlevo" };
 
   const invoice = await prisma.invoice.findFirst({
     where: { id, businessId: session.user.businessId },
@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: invoice
-      ? `Invoice ${invoice.invoiceNumber} — ${invoice.customerName} — Flowvo`
-      : "Invoice Details — Flowvo",
+      ? `Invoice ${invoice.invoiceNumber} — ${invoice.customerName} — Settlevo`
+      : "Invoice Details — Settlevo",
   };
 }
 

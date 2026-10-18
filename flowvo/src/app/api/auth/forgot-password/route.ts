@@ -51,13 +51,13 @@ export async function POST(request: NextRequest) {
 
     await sendEmail({
       to: email,
-      subject: "Reset your Flowvo password",
+      subject: "Reset your Settlevo password",
       html: `
         <p>Hi,</p>
-        <p>You requested a password reset for your Flowvo account. Click the link below to set a new password:</p>
+        <p>You requested a password reset for your Settlevo account. Click the link below to set a new password:</p>
         <p><a href="${resetUrl}" style="color:#1E7A6A;font-weight:600;">Reset my password</a></p>
         <p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
-        <p>— The Flowvo team</p>
+        <p>— The Settlevo team</p>
       `,
     });
 

@@ -1,7 +1,7 @@
 /**
  * Multi-Currency & Locale-Aware Monetary Formatting
  *
- * All amounts across Flowvo are stored in the smallest currency unit
+ * All amounts across Settlevo are stored in the smallest currency unit
  * (kobo, pence, cents, etc. where 100 units = 1 standard unit).
  */
 

@@ -8,7 +8,7 @@ import { formatAmount } from "@/lib/currency";
 import { JobCardAction } from "./JobCardAction";
 import { Briefcase, Calendar, Phone, Mail, ArrowRight } from "lucide-react";
 
-export const metadata: Metadata = { title: "Jobs — Flowvo" };
+export const metadata: Metadata = { title: "Jobs — Settlevo" };
 
 export default async function JobsPage() {
   const session = await getCurrentSession();

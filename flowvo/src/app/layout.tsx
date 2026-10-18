@@ -3,7 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Flowvo — Lead to Cash Automation",
+  title: "Settlevo — Lead to Cash Automation",
   description: "Automate your lead capture, quoting, job management, invoicing, and review requests.",
 };
 

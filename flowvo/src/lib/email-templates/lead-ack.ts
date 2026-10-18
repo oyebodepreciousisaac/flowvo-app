@@ -1,6 +1,6 @@
 /**
  * Email template for lead acknowledgement sent to the customer.
- * No Flowvo branding in the body per spec.
+ * No Settlevo branding in the body per spec.
  *
  * Security: all user-supplied strings (firstName, serviceType) are HTML-escaped
  * before interpolation to prevent stored XSS via email clients that render HTML.

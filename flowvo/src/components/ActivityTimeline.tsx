@@ -215,7 +215,7 @@ export function ActivityTimeline({
         const automated = isAutomatedEvent(log.eventType);
         const { label, detail } = getEventDisplay(log.eventType, log.detail);
         const timestamp = formatTimelineDate(log.occurredAt);
-        const actor = automated ? "Flowvo automation" : "Owner action";
+        const actor = automated ? "Settlevo automation" : "Owner action";
 
         return (
           <div key={log.id} className="relative group">

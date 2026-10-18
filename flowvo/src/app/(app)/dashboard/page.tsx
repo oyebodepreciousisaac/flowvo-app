@@ -19,7 +19,7 @@ import {
 import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Flowvo",
+  title: "Dashboard — Settlevo",
 };
 
 export default async function DashboardPage() {

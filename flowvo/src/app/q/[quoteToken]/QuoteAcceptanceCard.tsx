@@ -558,7 +558,7 @@ export function QuoteAcceptanceCard({
                           className="p-4 rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-border)] space-y-3"
                         >
                           <span className="text-[11px] font-semibold text-[var(--color-text)] block">
-                            Option 2: Submit Payment Receipt on Flowvo
+                            Option 2: Submit Payment Receipt on Settlevo
                           </span>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

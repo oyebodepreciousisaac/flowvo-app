@@ -7,7 +7,7 @@ import { StatusChip } from "@/components/ui/StatusChip";
 import { formatAmount } from "@/lib/currency";
 import { FileText, ArrowRight, Briefcase, Plus, ExternalLink } from "lucide-react";
 
-export const metadata: Metadata = { title: "Quotes — Flowvo" };
+export const metadata: Metadata = { title: "Quotes — Settlevo" };
 
 export default async function QuotesPage() {
   const session = await getCurrentSession();

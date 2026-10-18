@@ -62,12 +62,12 @@ export function AppShell({ children, user }: AppShellProps) {
                 </div>
               ) : (
                 <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-                  F
+                  S
                 </div>
               )}
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-lg leading-tight tracking-tight text-[var(--color-text)]">
-                  Flowvo
+                  Settlevo
                 </span>
                 <span className="text-[11px] text-[var(--color-text-muted)] truncate max-w-[150px]">
                   {user?.business?.name || "Business"}
@@ -135,11 +135,11 @@ export function AppShell({ children, user }: AppShellProps) {
                 </div>
               ) : (
                 <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
-                  F
+                  S
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-sm text-[var(--color-text)] leading-tight">Flowvo</span>
+                <span className="font-bold text-sm text-[var(--color-text)] leading-tight">Settlevo</span>
                 <span className="text-[10px] text-[var(--color-text-muted)] truncate max-w-[90px] xs:max-w-[120px]">
                   {user?.business?.name || "Business"}
                 </span>
@@ -172,7 +172,7 @@ export function AppShell({ children, user }: AppShellProps) {
               </span>
               <span className="text-xs text-[var(--color-border-strong)]">/</span>
               <span className="text-xs font-semibold text-[var(--color-text)]">
-                {user?.business?.name || "Flowvo Business"}
+                {user?.business?.name || "Settlevo Business"}
               </span>
             </div>
             <div className="flex items-center gap-2">

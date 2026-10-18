@@ -7,7 +7,7 @@ import { StatusChip } from "@/components/ui/StatusChip";
 import { CopyButton } from "./CopyButton";
 import { UserPlus, ArrowRight, Phone, Mail, FileText, Briefcase, ExternalLink } from "lucide-react";
 
-export const metadata: Metadata = { title: "Leads — Flowvo" };
+export const metadata: Metadata = { title: "Leads — Settlevo" };
 
 export default async function LeadsPage() {
   const session = await getCurrentSession();

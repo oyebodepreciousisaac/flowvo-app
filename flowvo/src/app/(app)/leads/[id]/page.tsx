@@ -22,7 +22,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const session = await getCurrentSession();
-  if (!session) return { title: "Lead Details — Flowvo" };
+  if (!session) return { title: "Lead Details — Settlevo" };
 
   const lead = await prisma.lead.findFirst({
     where: { id, businessId: session.user.businessId },
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   return {
-    title: lead ? `${lead.customerName} — Lead Details — Flowvo` : "Lead Details — Flowvo",
+    title: lead ? `${lead.customerName} — Lead Details — Settlevo` : "Lead Details — Settlevo",
   };
 }
 

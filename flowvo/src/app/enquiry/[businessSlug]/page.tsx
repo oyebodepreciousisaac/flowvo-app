@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   if (!business) {
-    return { title: "Enquiry — Flowvo" };
+    return { title: "Enquiry — Settlevo" };
   }
 
   return {
@@ -59,7 +59,7 @@ export default async function EnquiryPage({ params }: PageProps) {
 
         {/* Footer Note */}
         <p className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
-          Protected by Flowvo operations system. Your information is sent securely to {business.name}.
+          Protected by Settlevo operations system. Your information is sent securely to {business.name}.
         </p>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { QuoteEditor } from "./QuoteEditor";
 import { ArrowLeft, UserCheck } from "lucide-react";
 
-export const metadata: Metadata = { title: "New Quote — Flowvo" };
+export const metadata: Metadata = { title: "New Quote — Settlevo" };
 
 interface PageProps {
   searchParams: Promise<{ leadId?: string }>;
