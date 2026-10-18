@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SettlevoLogo } from "@/components/brand/SettlevoLogo";
 
 // Inner component that reads searchParams — must be wrapped in Suspense
 function LoginForm() {
@@ -107,9 +108,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-2xl shadow-sm">
-            S
-          </div>
+          <SettlevoLogo variant="icon" size={48} className="drop-shadow-sm" />
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Settlevo</h1>
           <p className="text-sm text-[var(--color-text-secondary)] text-center">
             Sign in to your business account

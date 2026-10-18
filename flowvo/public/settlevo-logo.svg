@@ -1,0 +1,28 @@
+<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="settlevo-full-primary" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E7A6A"/>
+      <stop offset="50%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#0D5C4E"/>
+    </linearGradient>
+    <linearGradient id="settlevo-full-accent" x1="16" y1="24" x2="42" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#6EE7B7"/>
+    </linearGradient>
+    <linearGradient id="settlevo-full-dark" x1="12" y1="34" x2="32" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#083830"/>
+      <stop offset="100%" stop-color="#0F4840"/>
+    </linearGradient>
+  </defs>
+  <!-- Settlevo Mark -->
+  <g transform="translate(0, 0)">
+    <path d="M24 6L38 14.08V20.5L24 12.42L14 18.2V13.8L24 6Z" fill="url(#settlevo-full-primary)"/>
+    <path d="M38 14.08L24 22.17L20 19.86L34 11.77L38 14.08Z" fill="#2DD4BF" opacity="0.85"/>
+    <path d="M19 23.5L24 29L40 13L42 16.5L24 34.5L15 24.5L19 23.5Z" fill="url(#settlevo-full-accent)"/>
+    <path d="M15 24.5L24 34.5L10 41.5L6.68 34V26L15 24.5Z" fill="url(#settlevo-full-dark)"/>
+    <path d="M10 41.5L24 34.5L34 39.5L24 43.5L10 41.5Z" fill="url(#settlevo-full-primary)"/>
+  </g>
+  <!-- Settlevo Wordmark -->
+  <text x="56" y="27" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="700" font-size="22" letter-spacing="-0.5" fill="#1A1D1A">Settlevo</text>
+  <text x="56" y="40" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="600" font-size="9" letter-spacing="0.8" fill="#7A8580" text-transform="uppercase">LEAD-TO-CASH AUTOMATION</text>
+</svg>

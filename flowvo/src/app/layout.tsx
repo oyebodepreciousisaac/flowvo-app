@@ -5,6 +5,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Settlevo — Lead to Cash Automation",
   description: "Automate your lead capture, quoting, job management, invoicing, and review requests.",
+  icons: {
+    icon: "/settlevo-icon.svg",
+    shortcut: "/settlevo-icon.svg",
+    apple: "/settlevo-icon.svg",
+  },
 };
 
 /**

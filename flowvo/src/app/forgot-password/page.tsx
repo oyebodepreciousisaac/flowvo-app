@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SettlevoLogo } from "@/components/brand/SettlevoLogo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -41,9 +42,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-2xl shadow-sm">
-            F
-          </div>
+          <SettlevoLogo variant="icon" size={48} className="drop-shadow-sm" />
           <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Reset your password</h1>
         </div>
 

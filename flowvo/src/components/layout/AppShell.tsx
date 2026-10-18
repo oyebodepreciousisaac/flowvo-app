@@ -18,6 +18,7 @@ import { LiveSyncProvider } from "@/components/live/LiveSyncProvider";
 import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { SettlevoLogo } from "@/components/brand/SettlevoLogo";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -61,9 +62,7 @@ export function AppShell({ children, user }: AppShellProps) {
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-                  S
-                </div>
+                <SettlevoLogo variant="icon" size={32} />
               )}
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-lg leading-tight tracking-tight text-[var(--color-text)]">
@@ -134,9 +133,7 @@ export function AppShell({ children, user }: AppShellProps) {
                   />
                 </div>
               ) : (
-                <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
-                  S
-                </div>
+                <SettlevoLogo variant="icon" size={28} />
               )}
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-sm text-[var(--color-text)] leading-tight">Settlevo</span>
