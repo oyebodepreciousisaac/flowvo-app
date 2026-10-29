@@ -34,3 +34,4 @@ export async function triggerNativeInstall(): Promise<"accepted" | "dismissed" |
     return "unavailable";
   }
 }
+
