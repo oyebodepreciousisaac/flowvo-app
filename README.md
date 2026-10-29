@@ -53,8 +53,8 @@ Public Enquiry ──► Auto-Ack Lead ──► Interactive Quote ──► Sch
 ### 2. Installation & Setup
 ```bash
 # Clone the repository
-git clone https://github.com/oyebodepreciousisaac/flowvo-app.git
-cd flowvo-app/flowvo
+git clone https://github.com/oyebodepreciousisaac/settlevo.git
+cd settlevo/flowvo
 
 # Install dependencies
 npm install
@@ -126,7 +126,7 @@ Comprehensive engineering documentation is available in the [`docs/`](docs/) dir
 ## Project Structure
 
 ```text
-flowvo-app/
+settlevo/
 ├── docs/                      # Production engineering documentation
 │   ├── ARCHITECTURE.md        # System design & state machines
 │   ├── API_REFERENCE.md       # API endpoints, webhooks & crons
