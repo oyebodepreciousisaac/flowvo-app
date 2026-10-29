@@ -120,7 +120,7 @@ export function InstallMobileModal({ isOpen, onClose }: InstallMobileModalProps)
             }`}
           >
             <PlusSquare className="w-4 h-4" />
-            Android
+            Android & Samsung
           </button>
         </div>
 
@@ -219,41 +219,22 @@ export function InstallMobileModal({ isOpen, onClose }: InstallMobileModalProps)
           )}
 
           {activeTab === "android" && (
-            <div className="w-full space-y-4 text-left">
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--color-surface-muted)] border border-[var(--color-border)]">
-                <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                  1
-                </span>
-                <div className="text-xs">
-                  <p className="font-semibold text-[var(--color-text)] mb-0.5">Open in Chrome</p>
-                  <p className="text-[var(--color-text-muted)]">
-                    Scan the QR code or navigate to <span className="font-mono">{installUrl || "flowvo.app"}</span> on your Android phone.
-                  </p>
-                </div>
+            <div className="w-full space-y-3.5 text-left">
+              <div className="p-3 rounded-xl bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs">
+                <p className="font-semibold text-[var(--color-text)] mb-1">Samsung Internet Browser</p>
+                <p className="text-[var(--color-text-muted)]">
+                  1. Tap the menu icon (☰) at the bottom right. <br />
+                  2. Tap <strong>+ Add page to</strong> (or look for the down-arrow <strong>Install</strong> icon in the address bar). <br />
+                  3. Select <strong>Home screen</strong> or <strong>App screen</strong>.
+                </p>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--color-surface-muted)] border border-[var(--color-border)]">
-                <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                  2
-                </span>
-                <div className="text-xs">
-                  <p className="font-semibold text-[var(--color-text)] mb-0.5">Tap "Install" Prompt</p>
-                  <p className="text-[var(--color-text-muted)]">
-                    Chrome will display an "Install Settlevo" banner at the bottom. Tap <strong>Install</strong>.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--color-surface-muted)] border border-[var(--color-border)]">
-                <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                  3
-                </span>
-                <div className="text-xs">
-                  <p className="font-semibold text-[var(--color-text)] mb-0.5">Or Use Menu (⋮)</p>
-                  <p className="text-[var(--color-text-muted)]">
-                    Tap the 3 vertical dots menu in the top right of Chrome and select <strong>Install app</strong> or <strong>Add to Home screen</strong>.
-                  </p>
-                </div>
+              <div className="p-3 rounded-xl bg-[var(--color-surface-muted)] border border-[var(--color-border)] text-xs">
+                <p className="font-semibold text-[var(--color-text)] mb-1">Google Chrome (Android)</p>
+                <p className="text-[var(--color-text-muted)]">
+                  1. Chrome automatically shows the <strong>&quot;Install Settlevo&quot;</strong> native banner. <br />
+                  2. Or tap the 3 dots (⋮) in the top-right corner $\rightarrow$ tap <strong>Install app</strong>.
+                </p>
               </div>
             </div>
           )}
@@ -278,3 +259,4 @@ export function InstallMobileModal({ isOpen, onClose }: InstallMobileModalProps)
     </div>
   );
 }
+

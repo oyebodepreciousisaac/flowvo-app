@@ -161,3 +161,4 @@ function encodeTextToModules(text: string): boolean[][] {
 
   return matrix.map((row) => row.map((cell) => cell ?? false));
 }
+

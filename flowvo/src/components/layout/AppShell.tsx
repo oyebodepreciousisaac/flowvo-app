@@ -166,7 +166,9 @@ export function AppShell({ children, user }: AppShellProps) {
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => setIsInstallModalOpen(true)}
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("settlevo:trigger-mobile-install"));
+                }}
                 className="p-1.5 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-muted)] transition-colors cursor-pointer"
                 title="Install Mobile App"
                 aria-label="Install App"

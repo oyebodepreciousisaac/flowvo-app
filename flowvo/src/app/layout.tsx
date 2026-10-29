@@ -36,8 +36,7 @@ export const viewport: Viewport = {
 
 /**
  * Inline script that runs BEFORE React hydrates to prevent a flash of the
- * wrong theme (FOUT). Reads localStorage and sets data-theme on <html>
- * immediately so the first paint already has the correct colours.
+ * wrong theme (FOUT) and immediately captures the PWA install prompt.
  */
 const themeScript = `
 (function() {
@@ -47,6 +46,13 @@ const themeScript = `
     var theme = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', theme);
   } catch (e) {}
+
+  // Capture PWA install event from millisecond zero so it is never missed
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.__settlevoDeferredInstallPrompt = e;
+    window.dispatchEvent(new CustomEvent('settlevo:pwa-installable'));
+  });
 })();
 `.trim();
 

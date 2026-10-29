@@ -17,3 +17,4 @@ describe("PWA QR Code Generator", () => {
     expect(svgLong).toBeDefined();
   });
 });
+

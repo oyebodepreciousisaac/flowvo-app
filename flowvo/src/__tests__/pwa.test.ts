@@ -80,3 +80,4 @@ describe("Progressive Web App (PWA) Architecture & Assets", () => {
     expect(qrSvg.length).toBeGreaterThan(500);
   });
 });
+
