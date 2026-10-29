@@ -88,3 +88,4 @@ Automated background tasks run autonomously on schedule via secure bearer token 
 | **Job-to-Invoice Lag** | 7 – 14 days | **0 seconds (Instant Auto-Draft)** | **100% elimination of invoicing lag** |
 | **Invoice Settlement Cycle** | 18 days average | **< 48 hours (Digital Payment Links)** | **73% faster cash collection** |
 | **Customer Review Capture Rate** | < 5% of completed jobs | **32% response rate** | **6x increase in Google reviews** |
+

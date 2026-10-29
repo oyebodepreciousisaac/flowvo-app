@@ -191,3 +191,4 @@ Crons are triggered by external schedulers (e.g., Vercel Cron, GitHub Actions) v
 - **Route:** `GET /api/cron/review-reminder`
 - **Schedule:** Daily (`0 10 * * *`)
 - **Logic:** Identifies review requests in `SENT` status > 4 days old with no response. Sends a friendly follow-up request (respects customer unsubscribe status).
+

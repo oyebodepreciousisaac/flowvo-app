@@ -17,6 +17,7 @@ import {
   Plus,
 } from "lucide-react";
 import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
+import { DashboardMobileAppBanner } from "@/components/pwa/DashboardMobileAppBanner";
 
 export const metadata: Metadata = {
   title: "Dashboard — Settlevo",
@@ -264,6 +265,9 @@ export default async function DashboardPage() {
           </span>
         </Link>
       </div>
+
+      {/* Desktop-to-Mobile PWA Install Quick Action */}
+      <DashboardMobileAppBanner />
 
       {/* Action Strip: Urgent Items Ordered by Severity */}
       <div className="space-y-4">

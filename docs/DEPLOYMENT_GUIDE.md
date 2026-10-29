@@ -98,3 +98,4 @@ Settlevo ships with pre-configured cron tasks in `flowvo/vercel.json`:
 
 Vercel automatically sends the `CRON_SECRET` header when triggering these paths. If hosting elsewhere, configure scheduled HTTP requests with the header:
 `Authorization: Bearer <YOUR_CRON_SECRET>`
+

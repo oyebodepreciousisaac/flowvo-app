@@ -26,6 +26,7 @@ Public Enquiry ──► Auto-Ack Lead ──► Interactive Quote ──► Sch
   - **Stripe (USD / GBP / EUR)**: Hosted checkout sessions with Apple Pay and Google Pay for international clients.
 - **Autonomous Background Crons**: Follow up on stalled quotes, escalate overdue invoices, and trigger Google review reminders.
 - **Enterprise-Grade Security**: AES-256-GCM encryption for bank account storage, timing-safe HMAC webhook verification, and OWASP ASVS Level 2 compliance.
+- **Progressive Web App (PWA) & Mobile Handover**: Instant installability on iOS and Android with offline caching, bottom-sheet install guidance, and desktop-to-mobile QR transfer from the dashboard.
 
 ---
 
@@ -39,7 +40,7 @@ Public Enquiry ──► Auto-Ack Lead ──► Interactive Quote ──► Sch
 | **Database & ORM** | [PostgreSQL](https://www.postgresql.org) (via [Neon Serverless](https://neon.tech)) & [Prisma ORM 5](https://www.prisma.io) |
 | **Payments** | [Paystack](https://paystack.com) (Subaccounts, NGN Rails) & [Stripe](https://stripe.com) (Global Multi-Currency) |
 | **Transactional Mail** | [Resend](https://resend.com) with custom HTML templates |
-| **Testing** | [Vitest](https://vitest.dev) (74 passing unit, integration, and security tests) |
+| **Testing** | [Vitest](https://vitest.dev) (81 passing unit, integration, and security tests) |
 
 ---
 
@@ -100,9 +101,9 @@ npm test
 ```
 
 ```
- Test Files  11 passed (11)
-      Tests  74 passed (74)
-   Duration  ~43s (100% pass rate)
+ Test Files  13 passed (13)
+      Tests  81 passed (81)
+   Duration  ~22s (100% pass rate)
 ```
 
 For full test suite details and the complete test catalog, refer to the [Testing Strategy Guide](docs/TESTING_STRATEGY.md).

@@ -61,3 +61,4 @@ All identified vulnerabilities have been remediated in the codebase and validate
 ### 3.3 IDOR in Public Receipt Upload (Medium)
 - **Vulnerability:** Public receipt submission allowed querying quotes by raw internal database ID without an active session.
 - **Remediation:** Enforced high-entropy `quoteToken` matching for public requests, ensuring only the quote's intended recipient can attach receipts.
+

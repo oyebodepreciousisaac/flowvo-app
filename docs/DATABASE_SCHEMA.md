@@ -118,3 +118,4 @@ To ensure constant-time queries across tenant-isolated tables, Settlevo enforces
 @@index([quoteToken])                // O(1) customer quote portal lookup
 @@index([invoiceNumber, businessId]) // Fast sequential invoice verification
 ```
+

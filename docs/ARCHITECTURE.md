@@ -135,3 +135,4 @@ Settlevo implements a lightweight live-sync abstraction combining Server-Sent Ev
 - Route: `/api/live/status`
 - Computes a state fingerprint based on open leads, active jobs, and pending invoices.
 - Minimizes database round-trips while delivering real-time notification badge counts and dashboard metric refreshes without external socket server overhead.
+

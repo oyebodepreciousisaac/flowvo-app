@@ -56,6 +56,8 @@ const securityHeaders = [
       "frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://checkout.paystack.com",
       "img-src 'self' data: https:",
       "connect-src 'self' https://api.paystack.co https://api.stripe.com",
+      "worker-src 'self'",
+      "manifest-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -67,6 +69,23 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   async headers() {
     return [
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
       {
         // Apply security headers to all routes
         source: "/(.*)",

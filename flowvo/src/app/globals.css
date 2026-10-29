@@ -248,3 +248,25 @@ body {
   }
 }
 
+/* ─── PWA & Mobile Phone Ergonomics ───────────────────────────────────────── */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Mobile safe area utility */
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.safe-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Standalone PWA UI refinements */
+@media all and (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+

@@ -1,15 +1,37 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { PWARegister } from "@/components/pwa/PWARegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Settlevo — Lead to Cash Automation",
   description: "Automate your lead capture, quoting, job management, invoicing, and review requests.",
-  icons: {
-    icon: "/settlevo-icon.svg",
-    shortcut: "/settlevo-icon.svg",
-    apple: "/settlevo-icon.svg",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Settlevo",
   },
+  icons: {
+    icon: [
+      { url: "/settlevo-icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/settlevo-icon.svg",
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/settlevo-icon.svg", type: "image/svg+xml" },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0D5C4E",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 /**
@@ -44,8 +66,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-touch-fullscreen" content="yes" />
       </head>
-      <body>{children}</body>
+      <body>
+        <PWARegister />
+        {children}
+      </body>
     </html>
   );
 }
