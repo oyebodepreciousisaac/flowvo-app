@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,8 +18,8 @@ import { LiveStatusBadge } from "@/components/live/LiveStatusBadge";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { SettlevoLogo } from "@/components/brand/SettlevoLogo";
-import { InstallMobileModal } from "@/components/pwa/InstallMobileModal";
 import { MobileInstallPrompt } from "@/components/pwa/MobileInstallPrompt";
+import { triggerNativeInstall } from "@/lib/pwa";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -45,7 +45,13 @@ const NAV_ITEMS = [
 
 export function AppShell({ children, user }: AppShellProps) {
   const pathname = usePathname();
-  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+
+  const handleInstallClick = async () => {
+    const result = await triggerNativeInstall();
+    if (result === "unavailable") {
+      window.dispatchEvent(new CustomEvent("settlevo:trigger-mobile-install"));
+    }
+  };
 
   return (
     <LiveSyncProvider>
@@ -99,21 +105,20 @@ export function AppShell({ children, user }: AppShellProps) {
             </nav>
           </div>
 
-          {/* Bottom Sidebar: Mobile Install Action & User profile */}
+          {/* Bottom Sidebar: Native App Install Action & User profile */}
           <div className="flex flex-col gap-3">
-            {/* Desktop-to-Mobile App Install Action Button */}
             <button
               type="button"
-              onClick={() => setIsInstallModalOpen(true)}
+              onClick={handleInstallClick}
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-[var(--color-primary-subtle)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all cursor-pointer shadow-2xs group"
-              title="Install Settlevo on your phone"
+              title="Install Settlevo App"
             >
               <div className="flex items-center gap-2">
                 <Smartphone className="w-4 h-4 shrink-0 text-[var(--color-primary)] group-hover:text-white transition-colors" />
-                <span>Mobile App</span>
+                <span>Install App</span>
               </div>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white dark:bg-neutral-800 text-[var(--color-primary)] group-hover:bg-white/20 group-hover:text-white">
-                Install
+                PWA
               </span>
             </button>
 
@@ -166,11 +171,9 @@ export function AppShell({ children, user }: AppShellProps) {
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("settlevo:trigger-mobile-install"));
-                }}
+                onClick={handleInstallClick}
                 className="p-1.5 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-muted)] transition-colors cursor-pointer"
-                title="Install Mobile App"
+                title="Install App"
                 aria-label="Install App"
               >
                 <Smartphone className="w-4 h-4" />
@@ -193,7 +196,7 @@ export function AppShell({ children, user }: AppShellProps) {
             </div>
           </header>
 
-          {/* Desktop Top Header Bar with Live Indicator, Mobile App Action & Notifications */}
+          {/* Desktop Top Header Bar with Live Indicator & Notifications */}
           <header className="hidden md:flex items-center justify-between px-8 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] sticky top-0 z-10 shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -205,15 +208,14 @@ export function AppShell({ children, user }: AppShellProps) {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              {/* Desktop Header 'Install on Mobile' button */}
               <button
                 type="button"
-                onClick={() => setIsInstallModalOpen(true)}
+                onClick={handleInstallClick}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-all cursor-pointer shadow-2xs"
-                title="Scan QR code to install on your mobile device"
+                title="Install Settlevo application"
               >
                 <Smartphone className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                <span>Install on Mobile</span>
+                <span>Install App</span>
               </button>
 
               <NotificationBell />
@@ -277,12 +279,8 @@ export function AppShell({ children, user }: AppShellProps) {
           </nav>
         </div>
 
-        {/* PWA Mobile Installation Trigger & Modals */}
+        {/* PWA Mobile Installation Trigger (No QR Code Modals) */}
         <MobileInstallPrompt />
-        <InstallMobileModal
-          isOpen={isInstallModalOpen}
-          onClose={() => setIsInstallModalOpen(false)}
-        />
       </div>
     </LiveSyncProvider>
   );

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
-import { generateQrSvg } from "@/lib/qr";
+import { isPwaInstalled, triggerNativeInstall } from "@/lib/pwa";
 
 describe("Progressive Web App (PWA) Architecture & Assets", () => {
   const publicDir = path.resolve(__dirname, "../../public");
@@ -16,7 +16,7 @@ describe("Progressive Web App (PWA) Architecture & Assets", () => {
     expect(manifest.name).toContain("Settlevo");
     expect(manifest.short_name).toBe("Settlevo");
     expect(manifest.display).toBe("standalone");
-    expect(manifest.start_url).toBe("/dashboard");
+    expect(manifest.start_url).toBe("/");
     expect(manifest.theme_color).toBe("#0D5C4E");
     expect(manifest.background_color).toBe("#0D5C4E");
     expect(Array.isArray(manifest.icons)).toBe(true);
@@ -70,14 +70,9 @@ describe("Progressive Web App (PWA) Architecture & Assets", () => {
     expect(html).toContain("window.location.reload()");
   });
 
-  it("generates scannable QR code for desktop-to-mobile installation transfer", () => {
-    const targetUrl = "https://settlevo.app/dashboard";
-    const qrSvg = generateQrSvg(targetUrl, 220);
-
-    expect(qrSvg).toContain("<svg");
-    expect(qrSvg).toContain("viewBox=\"0 0 220 220\"");
-    expect(qrSvg).toContain("rect");
-    expect(qrSvg.length).toBeGreaterThan(500);
+  it("verifies PWA install utility detects environment gracefully", async () => {
+    expect(isPwaInstalled()).toBe(false);
+    const result = await triggerNativeInstall();
+    expect(["accepted", "dismissed", "unavailable"]).toContain(result);
   });
 });
-

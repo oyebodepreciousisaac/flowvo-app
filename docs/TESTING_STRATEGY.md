@@ -1,8 +1,8 @@
 # Settlevo (Flowvo) — Automated Testing Suite & QA Test Matrix
 
 > **Testing Framework:** Vitest v2.1.9 with V8 Code Coverage  
-> **Test Status:** 13 Test Suites Passing | 81 of 81 Automated Tests Passing (100% Success Rate)  
-> **Execution Duration:** ~22 seconds  
+> **Test Status:** 12 Test Suites Passing | 79 of 79 Automated Tests Passing (100% Success Rate)  
+> **Execution Duration:** ~25 seconds  
 
 ---
 
@@ -32,8 +32,7 @@ Settlevo relies on multi-layer automated testing:
 | `slice7.test.ts` | Operational Hardening | 6 | **PASS** | System `/api/health`, dashboard action priority ordering |
 | `live-status.test.ts` | Real-Time Live Sync | 1 | **PASS** | Live fingerprint calculation and badge counts |
 | `pwa.test.ts` | Progressive Web App | 5 | **PASS** | Manifest validity, icon assets, service worker, offline fallback |
-| `qr.test.ts` | Mobile Handover QR | 2 | **PASS** | Pure TS QR SVG generator for desktop-to-mobile transfer |
-| **TOTAL** | **13 Test Suites** | **81** | **PASS** | **100% Operational Pass Rate** |
+| **TOTAL** | **12 Test Suites** | **79** | **PASS** | **100% Operational Pass Rate** |
 
 ---
 
@@ -140,9 +139,5 @@ Settlevo relies on multi-layer automated testing:
 76. `verifies all PWA icon assets exist on disk with valid file sizes`
 77. `verifies sw.js service worker implementation and cache strategy`
 78. `verifies offline.html exists with retry action`
-79. `generates scannable QR code for desktop-to-mobile installation transfer`
-
-### 13. `qr.test.ts` (2 Tests)
-80. `generates a valid SVG string with positive dimensions`
-81. `handles different URL lengths without throwing`
+79. `verifies PWA install utility detects environment gracefully`
 

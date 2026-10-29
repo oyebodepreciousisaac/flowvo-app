@@ -1,12 +1,12 @@
 {
-  "id": "/",
-  "name": "Settlevo — Lead to Cash Automation",
+  "id": "settlevo-app",
+  "name": "Settlevo",
   "short_name": "Settlevo",
-  "description": "Automated Lead-to-Cash Workflow & Direct Settlement Platform for Modern Trade & Service SMBs",
-  "start_url": "/dashboard",
+  "description": "Lead to Cash Automation Engine for Modern Trade & Service SMBs",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "background_color": "#0D5C4E",
   "theme_color": "#0D5C4E",
   "categories": ["business", "finance", "productivity"],
@@ -35,36 +35,5 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View real-time lead and invoice metrics",
-      "url": "/dashboard",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "New Quote",
-      "short_name": "New Quote",
-      "description": "Create and dispatch an estimate",
-      "url": "/quotes/new",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Invoices",
-      "short_name": "Invoices",
-      "description": "Manage billing and track settlements",
-      "url": "/invoices",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Leads",
-      "short_name": "Leads",
-      "description": "Review inbound client inquiries",
-      "url": "/leads",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    }
   ]
 }
-

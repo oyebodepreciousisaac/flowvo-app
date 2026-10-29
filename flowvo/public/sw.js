@@ -1,5 +1,5 @@
 // Settlevo Progressive Web App Service Worker
-const CACHE_NAME = 'settlevo-cache-v1';
+const CACHE_NAME = 'settlevo-cache-v2';
 const PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
@@ -7,13 +7,17 @@ const PRECACHE_ASSETS = [
   '/settlevo-logo.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Use allSettled so one failed asset does not block SW activation
+      await Promise.allSettled(
+        PRECACHE_ASSETS.map((url) => cache.add(url))
+      );
     }).then(() => self.skipWaiting())
   );
 });
@@ -87,4 +91,3 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 });
-

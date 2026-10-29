@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 
-// Extend Window interface to hold the deferred install prompt
 declare global {
   interface Window {
     __settlevoDeferredInstallPrompt?: any;
@@ -11,51 +10,58 @@ declare global {
 
 export function PWARegister() {
   useEffect(() => {
-    // Register Service Worker in production or supporting browsers
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then((registration) => {
-            // Check for updates
-            registration.addEventListener("updatefound", () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener("statechange", () => {
-                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                    // New content is available
-                    console.log("[Settlevo PWA] New version available.");
-                  }
-                });
-              }
-            });
-          })
-          .catch((err) => {
-            console.warn("[Settlevo PWA] ServiceWorker registration failed: ", err);
-          });
-      });
-
-      // Capture beforeinstallprompt event for custom install triggers
-      const handleBeforeInstallPrompt = (e: Event) => {
-        e.preventDefault();
-        window.__settlevoDeferredInstallPrompt = e;
-        window.dispatchEvent(new CustomEvent("settlevo:pwa-installable"));
-      };
-
-      window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-      window.addEventListener("appinstalled", () => {
-        window.__settlevoDeferredInstallPrompt = null;
-        window.dispatchEvent(new CustomEvent("settlevo:pwa-installed"));
-        console.log("[Settlevo PWA] Application installed successfully");
-      });
-
-      return () => {
-        window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-      };
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      return;
     }
+
+    const registerSW = () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          registration.addEventListener("updatefound", () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  console.log("[Settlevo PWA] New version ready.");
+                }
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn("[Settlevo PWA] ServiceWorker registration failed: ", err);
+        });
+    };
+
+    // Run registration immediately if page is already loaded, otherwise on load
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      registerSW();
+    } else {
+      window.addEventListener("load", registerSW, { once: true });
+    }
+
+    // Capture beforeinstallprompt event whenever it arrives
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      window.__settlevoDeferredInstallPrompt = e;
+      window.dispatchEvent(new CustomEvent("settlevo:pwa-installable"));
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    const handleAppInstalled = () => {
+      window.__settlevoDeferredInstallPrompt = null;
+      window.dispatchEvent(new CustomEvent("settlevo:pwa-installed"));
+    };
+
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
   }, []);
 
   return null;
 }
-

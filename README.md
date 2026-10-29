@@ -40,7 +40,7 @@ Public Enquiry ──► Auto-Ack Lead ──► Interactive Quote ──► Sch
 | **Database & ORM** | [PostgreSQL](https://www.postgresql.org) (via [Neon Serverless](https://neon.tech)) & [Prisma ORM 5](https://www.prisma.io) |
 | **Payments** | [Paystack](https://paystack.com) (Subaccounts, NGN Rails) & [Stripe](https://stripe.com) (Global Multi-Currency) |
 | **Transactional Mail** | [Resend](https://resend.com) with custom HTML templates |
-| **Testing** | [Vitest](https://vitest.dev) (81 passing unit, integration, and security tests) |
+| **Testing** | [Vitest](https://vitest.dev) (79 passing unit, integration, and security tests) |
 
 ---
 
@@ -101,9 +101,9 @@ npm test
 ```
 
 ```
- Test Files  13 passed (13)
-      Tests  81 passed (81)
-   Duration  ~22s (100% pass rate)
+ Test Files  12 passed (12)
+      Tests  79 passed (79)
+   Duration  ~25s (100% pass rate)
 ```
 
 For full test suite details and the complete test catalog, refer to the [Testing Strategy Guide](docs/TESTING_STRATEGY.md).
